@@ -21,8 +21,6 @@ published by oxo42. The code package names have not changed.
     </dependency>
 ```
 
-[![Build Status](https://travis-ci.org/oxo42/stateless4j.svg?branch=master)](https://travis-ci.org/oxo42/stateless4j)
-
 Introduction
 ============
 Create **state machines** and lightweight state machine-based workflows **directly in java code**.
