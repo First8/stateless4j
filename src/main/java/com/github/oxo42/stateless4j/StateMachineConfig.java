@@ -1,6 +1,5 @@
 package com.github.oxo42.stateless4j;
 
-import com.github.oxo42.stateless4j.delegates.Func2;
 import com.github.oxo42.stateless4j.transitions.TransitioningTriggerBehaviour;
 import com.github.oxo42.stateless4j.triggers.TriggerBehaviour;
 import com.github.oxo42.stateless4j.triggers.TriggerWithParameters;
@@ -59,7 +58,7 @@ public class StateMachineConfig<TState,TTrigger> {
      * This is the default.
      */
     public void disableEntryActionOfInitialState() {
-        this.entryActionOfInitialStateEnabled = true;
+        this.entryActionOfInitialStateEnabled = false;
     }
     
     /**
@@ -68,7 +67,7 @@ public class StateMachineConfig<TState,TTrigger> {
      * @param state The state
      * @return StateRepresentation for the specified state, or null.
      */
-    public StateRepresentation<TState, TTrigger> getRepresentation(TState state) {
+    public StateRepresentation<TState, TTrigger> getRepresentation(final TState state) {
         return  stateConfiguration.get(state);
     }
 
@@ -78,7 +77,7 @@ public class StateMachineConfig<TState,TTrigger> {
      * @param state The state
      * @return StateRepresentation for the specified state.
      */
-    private StateRepresentation<TState, TTrigger> getOrCreateRepresentation(TState state) {
+    private StateRepresentation<TState, TTrigger> getOrCreateRepresentation(final TState state) {
         StateRepresentation<TState, TTrigger> result = stateConfiguration.get(state);
         if (result == null) {
             result = new StateRepresentation<>(state);
@@ -88,7 +87,7 @@ public class StateMachineConfig<TState,TTrigger> {
         return result;
     }
 
-    public TriggerWithParameters<TState, TTrigger> getTriggerConfiguration(TTrigger trigger) {
+    public TriggerWithParameters<TState, TTrigger> getTriggerConfiguration(final TTrigger trigger) {
         return triggerConfiguration.get(trigger);
     }
 
@@ -99,16 +98,13 @@ public class StateMachineConfig<TState,TTrigger> {
      * @param state The state to configure
      * @return A configuration object through which the state can be configured
      */
-    public StateConfiguration<TState, TTrigger> configure(TState state) {
-        return new StateConfiguration<>(getOrCreateRepresentation(state), new Func2<TState, StateRepresentation<TState, TTrigger>>() {
-
-            public StateRepresentation<TState, TTrigger> call(TState arg0) {
-                return getOrCreateRepresentation(arg0);
-            }
-        });
+    public StateConfiguration<TState, TTrigger> configure(final TState state) {
+        return new StateConfiguration<>(
+                getOrCreateRepresentation(state),
+                this::getOrCreateRepresentation);
     }
 
-    private void saveTriggerConfiguration(TriggerWithParameters<TState, TTrigger> trigger) {
+    private void saveTriggerConfiguration(final TriggerWithParameters<TState, TTrigger> trigger) {
         if (triggerConfiguration.containsKey(trigger.getTrigger())) {
             throw new IllegalStateException("Parameters for the trigger '" + trigger + "' have already been configured.");
         }
@@ -124,7 +120,9 @@ public class StateMachineConfig<TState,TTrigger> {
      * @param <TArg0> Type of the first trigger argument
      * @return An object that can be passed to the fire() method in order to fire the parameterised trigger
      */
-    public <TArg0> TriggerWithParameters1<TArg0, TState, TTrigger> setTriggerParameters(TTrigger trigger, Class<TArg0> classe0) {
+    public <TArg0> TriggerWithParameters1<TArg0, TState, TTrigger> setTriggerParameters(
+            final TTrigger trigger,
+            final Class<TArg0> classe0) {
         TriggerWithParameters1<TArg0, TState, TTrigger> configuration = new TriggerWithParameters1<>(trigger, classe0);
         saveTriggerConfiguration(configuration);
         return configuration;
@@ -140,7 +138,10 @@ public class StateMachineConfig<TState,TTrigger> {
      * @param <TArg1> Type of the second trigger argument
      * @return An object that can be passed to the fire() method in order to fire the parameterised trigger
      */
-    public <TArg0, TArg1> TriggerWithParameters2<TArg0, TArg1, TState, TTrigger> setTriggerParameters(TTrigger trigger, Class<TArg0> classe0, Class<TArg1> classe1) {
+    public <TArg0, TArg1> TriggerWithParameters2<TArg0, TArg1, TState, TTrigger> setTriggerParameters(
+            final TTrigger trigger,
+            final Class<TArg0> classe0,
+            final Class<TArg1> classe1) {
         TriggerWithParameters2<TArg0, TArg1, TState, TTrigger> configuration = new TriggerWithParameters2<>(trigger, classe0, classe1);
         saveTriggerConfiguration(configuration);
         return configuration;
@@ -158,7 +159,11 @@ public class StateMachineConfig<TState,TTrigger> {
      * @param <TArg2> Type of the third trigger argument
      * @return An object that can be passed to the fire() method in order to fire the parameterised trigger
      */
-    public <TArg0, TArg1, TArg2> TriggerWithParameters3<TArg0, TArg1, TArg2, TState, TTrigger> setTriggerParameters(TTrigger trigger, Class<TArg0> classe0, Class<TArg1> classe1, Class<TArg2> classe2) {
+    public <TArg0, TArg1, TArg2> TriggerWithParameters3<TArg0, TArg1, TArg2, TState, TTrigger> setTriggerParameters(
+            final TTrigger trigger,
+            final Class<TArg0> classe0,
+            final Class<TArg1> classe1,
+            final Class<TArg2> classe2) {
         TriggerWithParameters3<TArg0, TArg1, TArg2, TState, TTrigger> configuration = new TriggerWithParameters3<>(trigger, classe0, classe1, classe2);
         saveTriggerConfiguration(configuration);
         return configuration;
@@ -184,7 +189,4 @@ public class StateMachineConfig<TState,TTrigger> {
             writer.write("}");
         }
     }
-
-
-
 }
