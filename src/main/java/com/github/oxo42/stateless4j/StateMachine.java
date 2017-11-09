@@ -78,7 +78,7 @@ public class StateMachine<S, T> {
     public StateConfiguration<S, T> configure(final S state) {
         return config.configure(state);
     }
-    
+
     public StateMachineConfig<S, T> configuration() {
         return config;
     }
@@ -201,6 +201,7 @@ public class StateMachine<S, T> {
             Transition<S, T> transition = new Transition<>(source, destination.get(), trigger);
 
             getCurrentRepresentation().exit(transition);
+            triggerBehaviour.performAction(args);
             setState(destination.get());
             getCurrentRepresentation().enter(transition, args);
         }
