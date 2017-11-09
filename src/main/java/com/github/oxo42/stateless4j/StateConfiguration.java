@@ -617,7 +617,11 @@ public class StateConfiguration<S, T> {
      * @param <TArg0>                  Type of the first trigger argument
      * @return The reciever
      */
-    @SuppressWarnings("unchecked")public <TArg0> StateConfiguration<S, T> permitDynamicIf(finalTriggerWithParameters1<TArg0, S, T> trigger, final Func2<TArg0, S> destinationStateSelector,final FuncBoolean guard) {
+    @SuppressWarnings("unchecked")
+    public <TArg0> StateConfiguration<S, T> permitDynamicIf(
+            final TriggerWithParameters1<TArg0, S, T> trigger,
+            final Func2<TArg0, S> destinationStateSelector,
+            final FuncBoolean guard) {
         requireNonNull( trigger , "trigger is null");
         requireNonNull( destinationStateSelector , "destinationStateSelector is null");
         return publicPermitDynamicIf(
@@ -678,7 +682,10 @@ public class StateConfiguration<S, T> {
      * @param <TArg1>                  Type of the second trigger argument
      * @return The reciever
      */
-    @SuppressWarnings("unchecked")public <TArg0, TArg1> StateConfiguration<S, T> permitDynamicIf(finalTriggerWithParameters2<TArg0, TArg1, S, T> trigger, final Func3<TArg0, TArg1, S> destinationStateSelector,final FuncBoolean guard) {
+    @SuppressWarnings("unchecked")public <TArg0, TArg1> StateConfiguration<S, T> permitDynamicIf(
+            final TriggerWithParameters2<TArg0, TArg1, S, T> trigger,
+            final Func3<TArg0, TArg1, S> destinationStateSelector,
+            final FuncBoolean guard) {
         requireNonNull( trigger , "trigger is null");
         requireNonNull( destinationStateSelector , "destinationStateSelector is null");
         return publicPermitDynamicIf(
@@ -746,7 +753,8 @@ public class StateConfiguration<S, T> {
      * @param <TArg2>                  Type of the third trigger argument
      * @return The reciever
      */
-    @SuppressWarnings("unchecked")public <TArg0, TArg1, TArg2> StateConfiguration<S, T> permitDynamicIf(finalTriggerWithParameters3<TArg0, TArg1, TArg2, S, T> trigger,
+    @SuppressWarnings("unchecked")public <TArg0, TArg1, TArg2> StateConfiguration<S, T> permitDynamicIf(
+            final TriggerWithParameters3<TArg0, TArg1, TArg2, S, T> trigger,
             final Func4<TArg0, TArg1, TArg2, S> destinationStateSelector,final FuncBoolean guard) {
         requireNonNull( trigger , "trigger is null");
         requireNonNull( destinationStateSelector , "destinationStateSelector is null");
@@ -777,8 +785,11 @@ public class StateConfiguration<S, T> {
      * @param <TArg2>                  Type of the third trigger argument
      * @return The reciever
      */
-    public <TArg0, TArg1, TArg2> StateConfiguration<S, T> permitDynamicIf(TriggerWithParameters3<TArg0, TArg1, TArg2, S, T> trigger,
-            final Func4<TArg0, TArg1, TArg2, S> destinationStateSelector, FuncBoolean guard, final Action3<TArg0, TArg1, TArg2> action) {
+    public <TArg0, TArg1, TArg2> StateConfiguration<S, T> permitDynamicIf(
+            final TriggerWithParameters3<TArg0, TArg1, TArg2, S, T> trigger,
+            final Func4<TArg0, TArg1, TArg2, S> destinationStateSelector,
+            final FuncBoolean guard,
+            final Action3<TArg0, TArg1, TArg2> action) {
         assert trigger != null : "trigger is null";
         assert destinationStateSelector != null : "destinationStateSelector is null";
         return publicPermitDynamicIf(
@@ -835,7 +846,11 @@ public class StateConfiguration<S, T> {
         return publicPermitDynamicIf(trigger, destinationStateSelector, NO_GUARD, NO_ACTION_N);
     }
 
-    StateConfiguration<S, T> publicPermitDynamicIf(final T trigger, final Func2<Object[], S> destinationStateSelector, final FuncBoolean guard, Action1<Object[]> action) {
+    StateConfiguration<S, T> publicPermitDynamicIf(
+            final T trigger,
+            final Func2<Object[], S> destinationStateSelector,
+            final FuncBoolean guard,
+            final Action1<Object[]> action) {
         requireNonNull(destinationStateSelector, "destinationStateSelector is null");
         requireNonNull(guard, "guard is null");
         representation.addTriggerBehaviour(new DynamicTriggerBehaviour<>(trigger, destinationStateSelector, guard, action));
