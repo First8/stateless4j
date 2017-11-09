@@ -23,7 +23,7 @@ public class PhoneCallJava8 {
         phoneCallConfig.configure(State.Connected)
                 .onEntry(this::startCallTimer)
                 .onExit(this::stopCallTimer)
-                .permit(Trigger.LeftMessage, State.OffHook)
+                .permit(Trigger.LeftMessage, State.OffHook, this::messageHasBeenLeft)
                 .permit(Trigger.HungUp, State.OffHook)
                 .permit(Trigger.PlacedOnHold, State.OnHold);
 
@@ -41,6 +41,10 @@ public class PhoneCallJava8 {
 
     private void startCallTimer() {
         // ...
+    }
+
+    private void messageHasBeenLeft() {
+        System.out.println("A message has been left.");
     }
 
     private enum State {
