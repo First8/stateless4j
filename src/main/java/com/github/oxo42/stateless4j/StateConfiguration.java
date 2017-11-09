@@ -5,6 +5,8 @@ import com.github.oxo42.stateless4j.transitions.Transition;
 import com.github.oxo42.stateless4j.transitions.TransitioningTriggerBehaviour;
 import com.github.oxo42.stateless4j.triggers.*;
 
+import static java.util.Objects.requireNonNull;
+
 public class StateConfiguration<S, T> {
 
     private static final FuncBoolean NO_GUARD = new FuncBoolean() {
@@ -17,10 +19,8 @@ public class StateConfiguration<S, T> {
     private final Func2<S, StateRepresentation<S, T>> lookup;
 
     public StateConfiguration(final StateRepresentation<S, T> representation, final Func2<S, StateRepresentation<S, T>> lookup) {
-        assert representation != null : "representation is null";
-        assert lookup != null : "lookup is null";
-        this.representation = representation;
-        this.lookup = lookup;
+        this.representation = requireNonNull(representation, "representation is null");
+        this.lookup = requireNonNull(lookup,  "lookup is null");
     }
 
     /**

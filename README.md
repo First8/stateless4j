@@ -1,8 +1,11 @@
-This is a fort of stateless4j originally implemented by github user oxo42
+This is a fort of stateless4j v2.5.0 originally implemented by github user oxo42
 https://github.com/oxo42/stateless4j
 
 Unfortunately, the project seems abandoned and valid bugfixes and suggestions are
 unanswered. Hence this fork is created to continue work on the code base.
+
+Changes since the original release can be found in the release notes.
+https://github.com/Domo42/stateless4j/releases
 
 Maven
 =====
@@ -10,7 +13,7 @@ Maven
     <dependency>
         <groupId>com.codebullets.stateless4j</groupId>
         <artifactId>stateless4j</artifactId>
-        <version>2.5.0</version>
+        <version>3.0.0</version>
     </dependency>
 ```
 
