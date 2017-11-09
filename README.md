@@ -9,6 +9,10 @@ https://github.com/Domo42/stateless4j/releases
 
 Maven
 =====
+
+The lib is available as its own maven artifact, different to the one
+published by oxo42. The code package names have not changed.
+
 ```xml
     <dependency>
         <groupId>com.codebullets.stateless4j</groupId>
