@@ -67,6 +67,7 @@ public class StateMachine<S, T> {
      * @param initialState  The initial state
      * @param stateAccessor State accessor
      * @param stateMutator  State mutator
+     * @param config        State machine configuration
      */
     public StateMachine(final S initialState, final Func<S> stateAccessor, final Action1<S> stateMutator, final StateMachineConfig<S, T> config) {
         this.config = config;

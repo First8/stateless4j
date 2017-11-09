@@ -2,7 +2,6 @@ package example;
 
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
-import com.github.oxo42.stateless4j.delegates.Action;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

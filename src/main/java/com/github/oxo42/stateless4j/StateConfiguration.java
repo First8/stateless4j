@@ -9,22 +9,9 @@ import static java.util.Objects.requireNonNull;
 
 public class StateConfiguration<S, T> {
 
-    private static final FuncBoolean NO_GUARD = new FuncBoolean() {
-        @Override
-        public boolean call() {
-            return true;
-        }
-    };
-    private static final Action NO_ACTION = new Action() {
-        @Override
-        public void doIt() {
-        }
-    };
-    private static final Action1<Object[]> NO_ACTION_N = new Action1<Object[]>() {
-    	@Override
-    	public void doIt(Object[] args) {
-    	}
-    };
+    private static final FuncBoolean NO_GUARD = () -> true;
+    private static final Action NO_ACTION = () -> { };
+    private static final Action1<Object[]> NO_ACTION_N = args -> { };
     private final StateRepresentation<S, T> representation;
     private final Func2<S, StateRepresentation<S, T>> lookup;
 
@@ -57,7 +44,7 @@ public class StateConfiguration<S, T> {
      * @param action           The action to be performed "during" transition
      * @return The reciever
      */
-    public StateConfiguration<S, T> permit(T trigger, S destinationState, final Action action) {
+    public StateConfiguration<S, T> permit(final T trigger, final S destinationState, final Action action) {
         enforceNotIdentityTransition(destinationState);
         return publicPermit(trigger, destinationState, action);
     }
@@ -88,7 +75,11 @@ public class StateConfiguration<S, T> {
      * @param action           The action to be performed "during" transition
      * @return The reciever
      */
-    public StateConfiguration<S, T> permitIf(T trigger, S destinationState, FuncBoolean guard, Action action) {
+    public StateConfiguration<S, T> permitIf(
+            final T trigger,
+            final S destinationState,
+            final FuncBoolean guard,
+            final Action action) {
         enforceNotIdentityTransition(destinationState);
         return publicPermitIf(trigger, destinationState, guard, action);
     }
@@ -121,7 +112,7 @@ public class StateConfiguration<S, T> {
      * @param action  The action to be performed "during" transition
      * @return The reciever
      */
-    public StateConfiguration<S, T> permitReentry(T trigger, Action action) {
+    public StateConfiguration<S, T> permitReentry(final T trigger, final Action action) {
         return publicPermit(trigger, representation.getUnderlyingState(), action);
     }
 
@@ -152,9 +143,10 @@ public class StateConfiguration<S, T> {
      *
      * @param trigger The accepted trigger
      * @param guard   Function that must return true in order for the trigger to be accepted
+     * @param action  The transition action to execute in the case of the re-entry.
      * @return The reciever
      */
-    public StateConfiguration<S, T> permitReentryIf(T trigger, FuncBoolean guard, Action action) {
+    public StateConfiguration<S, T> permitReentryIf(final T trigger, final FuncBoolean guard, final Action action) {
         return publicPermitIf(trigger, representation.getUnderlyingState(), guard, action);
     }
 
@@ -441,7 +433,10 @@ public class StateConfiguration<S, T> {
      * @param action                   The action to be performed "during" transition
      * @return The receiver
      */
-    public StateConfiguration<S, T> permitDynamic(T trigger, final Func<S> destinationStateSelector, Action action) {
+    public StateConfiguration<S, T> permitDynamic(
+            final T trigger,
+            final Func<S> destinationStateSelector,
+            final Action action) {
         return permitDynamicIf(trigger, destinationStateSelector, NO_GUARD, action);
     }
 
@@ -474,8 +469,10 @@ public class StateConfiguration<S, T> {
      * @param <TArg0>                  Type of the first trigger argument
      * @return The receiver
      */
-    public <TArg0> StateConfiguration<S, T> permitDynamic(TriggerWithParameters1<TArg0, S, T> trigger,
-    		Func2<TArg0, S> destinationStateSelector, Action1<TArg0> action) {
+    public <TArg0> StateConfiguration<S, T> permitDynamic(
+            final TriggerWithParameters1<TArg0, S, T> trigger,
+    		final Func2<TArg0, S> destinationStateSelector,
+            final Action1<TArg0> action) {
         return permitDynamicIf(trigger, destinationStateSelector, NO_GUARD, action);
     }
 
@@ -512,8 +509,9 @@ public class StateConfiguration<S, T> {
      * @return The receiver
      */
     public <TArg0, TArg1> StateConfiguration<S, T> permitDynamic(
-            TriggerWithParameters2<TArg0, TArg1, S, T> trigger,
-            Func3<TArg0, TArg1, S> destinationStateSelector, Action2<TArg0, TArg1> action) {
+            final TriggerWithParameters2<TArg0, TArg1, S, T> trigger,
+            final Func3<TArg0, TArg1, S> destinationStateSelector,
+            final Action2<TArg0, TArg1> action) {
         return permitDynamicIf(trigger, destinationStateSelector, NO_GUARD, action);
     }
 
@@ -551,7 +549,8 @@ public class StateConfiguration<S, T> {
      * @param <TArg2>                  Type of the third trigger argument
      * @return The receiver
      */
-    public <TArg0, TArg1, TArg2> StateConfiguration<S, T> permitDynamic(TriggerWithParameters3<TArg0, TArg1, TArg2, S, T> trigger,
+    public <TArg0, TArg1, TArg2> StateConfiguration<S, T> permitDynamic(
+            final TriggerWithParameters3<TArg0, TArg1, TArg2, S, T> trigger,
     		final Func4<TArg0, TArg1, TArg2, S> destinationStateSelector,
     		final Action3<TArg0, TArg1, TArg2> action) {
         return permitDynamicIf(trigger, destinationStateSelector, NO_GUARD, action);
@@ -570,11 +569,12 @@ public class StateConfiguration<S, T> {
             final T trigger,
             final Func<S> destinationStateSelector,
             final FuncBoolean guard) {
-        assert destinationStateSelector != null : "destinationStateSelector is null";
+        requireNonNull(destinationStateSelector, "destinationStateSelector is null");
         return publicPermitDynamicIf(
                 trigger,
                 arg0 -> destinationStateSelector.call(),
-                guard, NO_ACTION_N);
+                guard,
+                NO_ACTION_N);
     }
 
     /**
@@ -590,21 +590,17 @@ public class StateConfiguration<S, T> {
      * @param action                   The action to be performed "during" transition
      * @return The receiver
      */
-    public StateConfiguration<S, T> permitDynamicIf(T trigger, final Func<S> destinationStateSelector, FuncBoolean guard,
+    public StateConfiguration<S, T> permitDynamicIf(
+            final T trigger,
+            final Func<S> destinationStateSelector,
+            final FuncBoolean guard,
     		final Action action) {
-        assert destinationStateSelector != null : "destinationStateSelector is null";
-        return publicPermitDynamicIf(trigger, new Func2<Object[], S>() {
-            @Override
-            public S call(Object[] arg0) {
-                return destinationStateSelector.call();
-            }
-        }, guard, new Action1<Object[]>() {
-            @SuppressWarnings("unchecked")
-        	@Override
-        	public void doIt(Object[] args) {
-        		action.doIt();
-        	}
-        });
+        requireNonNull(destinationStateSelector, "destinationStateSelector is null");
+        return publicPermitDynamicIf(
+                trigger,
+                arg0 -> destinationStateSelector.call(),
+                guard,
+                args -> action.doIt());
     }
 
     /**
@@ -622,16 +618,13 @@ public class StateConfiguration<S, T> {
             final TriggerWithParameters1<TArg0, S, T> trigger,
             final Func2<TArg0, S> destinationStateSelector,
             final FuncBoolean guard) {
-        requireNonNull( trigger , "trigger is null");
-        requireNonNull( destinationStateSelector , "destinationStateSelector is null");
+        requireNonNull(trigger , "trigger is null");
+        requireNonNull(destinationStateSelector , "destinationStateSelector is null");
         return publicPermitDynamicIf(
                 trigger.getTrigger(),
-                     args-> destinationStateSelector.call((TArg0) args[0]),
-
-
-                guard
-        , NO_ACTION_N
-        );
+                args-> destinationStateSelector.call((TArg0) args[0]),
+                guard,
+                NO_ACTION_N);
     }
 
     /**
@@ -649,26 +642,19 @@ public class StateConfiguration<S, T> {
      * @param <TArg0>                  Type of the first trigger argument
      * @return The receiver
      */
-    public <TArg0> StateConfiguration<S, T> permitDynamicIf(TriggerWithParameters1<TArg0, S, T> trigger,final Func2<TArg0, S> destinationStateSelector, FuncBoolean guard,
+    @SuppressWarnings("unchecked")
+    public <TArg0> StateConfiguration<S, T> permitDynamicIf(
+            final TriggerWithParameters1<TArg0, S, T> trigger,
+            final Func2<TArg0, S> destinationStateSelector,
+            final FuncBoolean guard,
     		final Action1<TArg0> action) {
-        assert trigger != null : "trigger is null";
-        assert destinationStateSelector != null : "destinationStateSelector is null";
+        requireNonNull(trigger , "trigger is null");
+        requireNonNull(destinationStateSelector , "destinationStateSelector is null");
         return publicPermitDynamicIf(
-                trigger.getTrigger(), new Func2<Object[], S>() {
-                    @SuppressWarnings("unchecked")
-                    @Override
-                    public S call(Object[] args) {
-                        return destinationStateSelector.call((TArg0) args[0]);
-
-                    }
-                },
-                guard, new Action1<Object[]>() {
-                    @SuppressWarnings("unchecked")
-                	@Override
-                	public void doIt(Object[] args) {
-                		action.doIt((TArg0) args[0]);
-                	}
-                });
+                trigger.getTrigger(),
+                args -> destinationStateSelector.call((TArg0) args[0]),
+                guard,
+                args -> action.doIt((TArg0) args[0]));
     }
 
     /**
@@ -682,21 +668,20 @@ public class StateConfiguration<S, T> {
      * @param <TArg1>                  Type of the second trigger argument
      * @return The reciever
      */
-    @SuppressWarnings("unchecked")public <TArg0, TArg1> StateConfiguration<S, T> permitDynamicIf(
+    @SuppressWarnings("unchecked")
+    public <TArg0, TArg1> StateConfiguration<S, T> permitDynamicIf(
             final TriggerWithParameters2<TArg0, TArg1, S, T> trigger,
             final Func3<TArg0, TArg1, S> destinationStateSelector,
             final FuncBoolean guard) {
-        requireNonNull( trigger , "trigger is null");
-        requireNonNull( destinationStateSelector , "destinationStateSelector is null");
+        requireNonNull(trigger , "trigger is null");
+        requireNonNull(destinationStateSelector , "destinationStateSelector is null");
         return publicPermitDynamicIf(
                 trigger.getTrigger(),
-                     args-> destinationStateSelector.call(
-                                (TArg0) args[0],
-                                (TArg1) args[1]),
-
-                guard
-        , NO_ACTION_N
-        );
+                args-> destinationStateSelector.call(
+                        (TArg0) args[0],
+                        (TArg1) args[1]),
+                guard,
+                NO_ACTION_N);
     }
 
     /**
@@ -715,30 +700,23 @@ public class StateConfiguration<S, T> {
      * @param <TArg1>                  Type of the second trigger argument
      * @return The receiver
      */
-    public <TArg0, TArg1> StateConfiguration<S, T> permitDynamicIf(TriggerWithParameters2<TArg0, TArg1, S, T> trigger, final Func3<TArg0, TArg1, S> destinationStateSelector, FuncBoolean guard,
+    @SuppressWarnings("unchecked")
+    public <TArg0, TArg1> StateConfiguration<S, T> permitDynamicIf(
+            final TriggerWithParameters2<TArg0, TArg1, S, T> trigger,
+            final Func3<TArg0, TArg1, S> destinationStateSelector,
+            final FuncBoolean guard,
     		final Action2<TArg0, TArg1> action) {
-        assert trigger != null : "trigger is null";
-        assert destinationStateSelector != null : "destinationStateSelector is null";
+        requireNonNull(trigger , "trigger is null");
+        requireNonNull(destinationStateSelector , "destinationStateSelector is null");
         return publicPermitDynamicIf(
-                trigger.getTrigger(), new Func2<Object[], S>() {
-                    @SuppressWarnings("unchecked")
-
-                    @Override
-                    public S call(Object[] args) {
-                        return destinationStateSelector.call(
-                                (TArg0) args[0],
-                                (TArg1) args[1]);
-                    }
-                },
-                guard, new Action1<Object[]>() {
-                    @SuppressWarnings("unchecked")
-                	@Override
-                	public void doIt(Object[] args) {
-                		action.doIt(
-                				(TArg0) args[0],
-                				(TArg1) args[1]);
-                	}
-                });
+                trigger.getTrigger(),
+                args -> destinationStateSelector.call(
+                        (TArg0) args[0],
+                        (TArg1) args[1]),
+                guard,
+                args -> action.doIt(
+                        (TArg0) args[0],
+                        (TArg1) args[1]));
     }
 
     /**
@@ -753,19 +731,20 @@ public class StateConfiguration<S, T> {
      * @param <TArg2>                  Type of the third trigger argument
      * @return The reciever
      */
-    @SuppressWarnings("unchecked")public <TArg0, TArg1, TArg2> StateConfiguration<S, T> permitDynamicIf(
+    @SuppressWarnings("unchecked")
+    public <TArg0, TArg1, TArg2> StateConfiguration<S, T> permitDynamicIf(
             final TriggerWithParameters3<TArg0, TArg1, TArg2, S, T> trigger,
             final Func4<TArg0, TArg1, TArg2, S> destinationStateSelector,final FuncBoolean guard) {
-        requireNonNull( trigger , "trigger is null");
-        requireNonNull( destinationStateSelector , "destinationStateSelector is null");
+        requireNonNull(trigger , "trigger is null");
+        requireNonNull(destinationStateSelector , "destinationStateSelector is null");
         return publicPermitDynamicIf(
-                trigger.getTrigger(),  args-> destinationStateSelector.call(
-                                (TArg0) args[0],
-                                (TArg1) args[1],
-                                (TArg2) args[2]),
-                         guard
-        , NO_ACTION_N
-            );
+                trigger.getTrigger(),
+                args-> destinationStateSelector.call(
+                        (TArg0) args[0],
+                        (TArg1) args[1],
+                        (TArg2) args[2]),
+                guard,
+                NO_ACTION_N);
     }
 
     /**
@@ -785,35 +764,25 @@ public class StateConfiguration<S, T> {
      * @param <TArg2>                  Type of the third trigger argument
      * @return The reciever
      */
+    @SuppressWarnings("unchecked")
     public <TArg0, TArg1, TArg2> StateConfiguration<S, T> permitDynamicIf(
             final TriggerWithParameters3<TArg0, TArg1, TArg2, S, T> trigger,
             final Func4<TArg0, TArg1, TArg2, S> destinationStateSelector,
             final FuncBoolean guard,
             final Action3<TArg0, TArg1, TArg2> action) {
-        assert trigger != null : "trigger is null";
-        assert destinationStateSelector != null : "destinationStateSelector is null";
+        requireNonNull(trigger , "trigger is null");
+        requireNonNull(destinationStateSelector , "destinationStateSelector is null");
         return publicPermitDynamicIf(
-                trigger.getTrigger(), new Func2<Object[], S>() {
-                    @SuppressWarnings("unchecked")
-
-                    @Override
-                    public S call(Object[] args) {
-                        return destinationStateSelector.call(
-                                (TArg0) args[0],
-                                (TArg1) args[1],
-                                (TArg2) args[2]
-                        );
-                    }
-                }, guard, new Action1<Object[]>() {
-                    @SuppressWarnings("unchecked")
-                	@Override
-                	public void doIt(Object[] args) {
-                		action.doIt(
-                				(TArg0) args[0],
-                				(TArg1) args[1],
-                				(TArg2) args[2]);
-                	}
-                });
+                trigger.getTrigger(),
+                args -> destinationStateSelector.call(
+                        (TArg0) args[0],
+                        (TArg1) args[1],
+                        (TArg2) args[2]),
+                guard,
+                args -> action.doIt(
+                        (TArg0) args[0],
+                        (TArg1) args[1],
+                        (TArg2) args[2]));
     }
 
     void enforceNotIdentityTransition(final S destination) {
@@ -836,8 +805,8 @@ public class StateConfiguration<S, T> {
     }
 
     StateConfiguration<S, T> publicPermitIf(T trigger, S destinationState, FuncBoolean guard, Action action) {
-        assert guard != null : "guard is null";
-        assert action != null : "action is null";
+        requireNonNull(guard, "guard is null");
+        requireNonNull(action, "action is null");
         representation.addTriggerBehaviour(new TransitioningTriggerBehaviour<>(trigger, destinationState, guard, action));
         return this;
     }
