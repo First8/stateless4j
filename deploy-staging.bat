@@ -1,8 +1,8 @@
 @ECHO OFF
 SET targetVersion=3.0.0
 SET baseDir=%~dp0
-REM SET targetUrl=https://oss.sonatype.org/service/local/staging/deploy/maven2
-SET targetUrl=file://v:\temp\repo
+SET targetUrl=https://oss.sonatype.org/service/local/staging/deploy/maven2
+REM SET targetUrl=file://v:\temp\repo
 
 REM change version number in project tree
 CALL mvn versions:set -DgenerateBackupPoms=false -DnewVersion=%targetVersion%
