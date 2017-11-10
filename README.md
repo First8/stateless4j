@@ -1,4 +1,4 @@
-This is a fort of stateless4j v2.5.0 originally implemented by github user oxo42:  
+This is a fork of stateless4j v2.5.0 originally implemented by github user oxo42:  
 https://github.com/oxo42/stateless4j
 
 Unfortunately, the project seems abandoned and valid bugfixes and suggestions are
