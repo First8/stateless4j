@@ -134,6 +134,23 @@ public class StateMachine<S, T> {
      * @param <TArg0> Type of the first trigger argument
      */
     public <TArg0> void fire(
+            final T trigger,
+            final TArg0 arg0) {
+        requireNonNull(trigger, "trigger is null");
+        publicFire(trigger, arg0);
+    }
+
+    /**
+     * Transition from the current state via the specified trigger.
+     * The target state is determined by the configuration of the current state.
+     * Actions associated with leaving the current state and entering the new one
+     * will be invoked.
+     *
+     * @param trigger The trigger to fire
+     * @param arg0    The first argument
+     * @param <TArg0> Type of the first trigger argument
+     */
+    public <TArg0> void fire(
             final TriggerWithParameters1<TArg0, S, T> trigger,
             final TArg0 arg0) {
         requireNonNull(trigger, "trigger is null");

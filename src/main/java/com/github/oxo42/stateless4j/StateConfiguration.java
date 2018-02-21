@@ -199,6 +199,23 @@ public class StateConfiguration<S, T> {
     /**
      * Specify an action that will execute when transitioning into the configured state
      *
+     * @param entryAction Action to execute, providing details of the transition
+     * @param classe0     Class argument
+     * @param <TArg0>     Type of the first trigger argument
+     * @return The receiver
+     */
+    @SuppressWarnings("unchecked")
+    public <TArg0> StateConfiguration<S, T> onEntry(
+            final Action2<TArg0, Transition<S, T>> entryAction,
+            final Class<TArg0> classe0) {
+        requireNonNull(entryAction, "entryAction is null");
+        representation.addEntryAction((transition, args) -> entryAction.doIt((TArg0) args[0], transition));
+        return this;
+    }
+
+    /**
+     * Specify an action that will execute when transitioning into the configured state
+     *
      * @param trigger     The trigger by which the state must be entered in order for the action to execute
      * @param entryAction Action to execute
      * @return The receiver
