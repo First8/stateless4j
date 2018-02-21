@@ -1,11 +1,26 @@
 package com.github.oxo42.stateless4j;
 
-import com.github.oxo42.stateless4j.delegates.*;
+import static java.util.Objects.requireNonNull;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.github.oxo42.stateless4j.delegates.Action;
+import com.github.oxo42.stateless4j.delegates.Action1;
+import com.github.oxo42.stateless4j.delegates.Action2;
+import com.github.oxo42.stateless4j.delegates.Action3;
+import com.github.oxo42.stateless4j.delegates.Action4;
+import com.github.oxo42.stateless4j.delegates.Func;
+import com.github.oxo42.stateless4j.delegates.Func2;
+import com.github.oxo42.stateless4j.delegates.Func3;
+import com.github.oxo42.stateless4j.delegates.Func4;
+import com.github.oxo42.stateless4j.delegates.FuncBoolean;
 import com.github.oxo42.stateless4j.transitions.Transition;
 import com.github.oxo42.stateless4j.transitions.TransitioningTriggerBehaviour;
-import com.github.oxo42.stateless4j.triggers.*;
-
-import static java.util.Objects.requireNonNull;
+import com.github.oxo42.stateless4j.triggers.DynamicTriggerBehaviour;
+import com.github.oxo42.stateless4j.triggers.IgnoredTriggerBehaviour;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters1;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters2;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters3;
 
 public class StateConfiguration<S, T> {
 
@@ -14,6 +29,7 @@ public class StateConfiguration<S, T> {
     private static final Action1<Object[]> NO_ACTION_N = args -> { };
     private final StateRepresentation<S, T> representation;
     private final Func2<S, StateRepresentation<S, T>> lookup;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public StateConfiguration(final StateRepresentation<S, T> representation, final Func2<S, StateRepresentation<S, T>> lookup) {
         this.representation = requireNonNull(representation, "representation is null");
@@ -209,7 +225,14 @@ public class StateConfiguration<S, T> {
             final Action2<TArg0, Transition<S, T>> entryAction,
             final Class<TArg0> classe0) {
         requireNonNull(entryAction, "entryAction is null");
-        representation.addEntryAction((transition, args) -> entryAction.doIt((TArg0) args[0], transition));
+        representation.addEntryAction((transition, args) -> {
+            if (args != null && args.length > 0) {
+                entryAction.doIt((TArg0) args[0], transition);
+            } else {
+                logger.warn("Skipped execution of onEntry action, expecting an argument for this action. This was probably caused by firing a trigger without "
+                        + "an argument.");
+            }
+        });
         return this;
     }
 
