@@ -4,12 +4,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-public class StateMachineContext {
+public class StateMachineContext<S, T> {
 
 	private final Map<String,Object> attributes = new HashMap<>();
 
+    private ContextedStateMachine<S, T> contextedStateMachine;
 
-	public Map<String, Object> getAttributes() {
+    public StateMachineContext(ContextedStateMachine<S, T> contextedStateMachine) {
+        this.contextedStateMachine = contextedStateMachine;
+    }
+
+    public Map<String, Object> getAttributes() {
 		return attributes;
 	}
 
@@ -24,4 +29,8 @@ public class StateMachineContext {
 	public Stream<Map.Entry<String,Object>> attributes() {
 		return this.attributes.entrySet().stream();
 	}
+
+    public ContextedStateMachine<S, T> getContextedStateMachine() {
+        return contextedStateMachine;
+    }
 }
