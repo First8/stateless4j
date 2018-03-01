@@ -13,7 +13,7 @@ public class ContextedStateMachineTests {
                 .permit(Trigger.X, State.B);
 
         config.configure(State.B)
-                .onEntry(((arg1, arg2) -> arg1.setAttribute("test-key", "123")), StateMachineContext.class);
+                .onEntry(((arg1, arg2) -> arg1.setAttribute("test-key", "123")), DefaultStateMachineContext.class);
 
         ContextedStateMachine<State, Trigger> contextedStateMachine = new ContextedStateMachine<>(State.A, config);
 
@@ -33,7 +33,7 @@ public class ContextedStateMachineTests {
                 .permit(Trigger.X, State.B);
 
         config.configure(State.B)
-                .onEntry(((arg1, arg2) -> arg1.setAttribute("test-key", "123")), StateMachineContext.class);
+                .onEntry(((arg1, arg2) -> arg1.setAttribute("test-key", "123")), DefaultStateMachineContext.class);
 
         ContextedStateMachine<State, Trigger> contextedStateMachine = new ContextedStateMachine<>(State.A, config);
 
