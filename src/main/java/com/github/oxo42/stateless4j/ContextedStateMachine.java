@@ -85,6 +85,11 @@ public class ContextedStateMachine<S, T> extends StateMachine<S, T> {
         this.stateMachineContext.setContextedStateMachine(this);
     }
 
+    /**
+     * Get the {@link StateMachineContext} of this contexted state machine. This context allows for the storing of context information for this state machine.
+     *
+     * @return the context of this state machine
+     */
     public StateMachineContext getStateMachineContext() {
         return stateMachineContext;
     }
