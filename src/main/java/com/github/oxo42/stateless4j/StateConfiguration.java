@@ -1,13 +1,26 @@
 package com.github.oxo42.stateless4j;
 
-import com.github.oxo42.stateless4j.delegates.*;
-import com.github.oxo42.stateless4j.transitions.Transition;
-import com.github.oxo42.stateless4j.transitions.TransitioningTriggerBehaviour;
-import com.github.oxo42.stateless4j.triggers.*;
+import static java.util.Objects.requireNonNull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static java.util.Objects.requireNonNull;
+import com.github.oxo42.stateless4j.delegates.Action;
+import com.github.oxo42.stateless4j.delegates.Action1;
+import com.github.oxo42.stateless4j.delegates.Action2;
+import com.github.oxo42.stateless4j.delegates.Action3;
+import com.github.oxo42.stateless4j.delegates.Action4;
+import com.github.oxo42.stateless4j.delegates.Func;
+import com.github.oxo42.stateless4j.delegates.Func2;
+import com.github.oxo42.stateless4j.delegates.Func3;
+import com.github.oxo42.stateless4j.delegates.Func4;
+import com.github.oxo42.stateless4j.delegates.FuncBoolean;
+import com.github.oxo42.stateless4j.transitions.Transition;
+import com.github.oxo42.stateless4j.transitions.TransitioningTriggerBehaviour;
+import com.github.oxo42.stateless4j.triggers.DynamicTriggerBehaviour;
+import com.github.oxo42.stateless4j.triggers.IgnoredTriggerBehaviour;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters1;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters2;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters3;
 
 public class StateConfiguration<S, T> {
 
@@ -433,7 +446,7 @@ public class StateConfiguration<S, T> {
             if (args != null && args.length > 0) {
                 exitAction.doIt((TArg0) args[0], transition);
             } else {
-                logger.warn("Skipped execution of onEntry action, expecting an argument for this action. This was probably caused by firing a trigger without "
+                logger.warn("Skipped execution of onExit action, expecting an argument for this action. This was probably caused by firing a trigger without "
                         + "an argument.");
             }
         });

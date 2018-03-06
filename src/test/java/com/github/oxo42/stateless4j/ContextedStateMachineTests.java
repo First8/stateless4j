@@ -61,4 +61,21 @@ public class ContextedStateMachineTests {
         Assert.assertEquals(1, contextedStateMachine.getStateMachineContext().attributes().count());
         Assert.assertEquals("123", contextedStateMachine.getStateMachineContext().getAttribute("test-key"));
     }
+
+    @Test
+    public void OnExitSkippedDueToMissingArgument() {
+        StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
+
+        config.configure(State.A)
+                .permit(Trigger.X, State.B);
+
+        config.configure(State.A)
+                .onExit(((arg1, arg2) -> arg1.setAttribute("test-key", "123")), DefaultStateMachineContext.class);
+
+        ContextedStateMachine<State, Trigger> contextedStateMachine = new ContextedStateMachine<>(State.A, config);
+
+        contextedStateMachine.fire(Trigger.X);
+
+        Assert.assertEquals(null, contextedStateMachine.getStateMachineContext().getAttribute("test-key"));
+    }
 }
