@@ -1,15 +1,10 @@
 package com.github.oxo42.stateless4j;
 
-import com.github.oxo42.stateless4j.delegates.Action1;
 import com.github.oxo42.stateless4j.delegates.Action2;
 import com.github.oxo42.stateless4j.transitions.Transition;
 import com.github.oxo42.stateless4j.triggers.TriggerBehaviour;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 
 public class StateRepresentation<S, T> {
 
@@ -17,7 +12,7 @@ public class StateRepresentation<S, T> {
 
     private final Map<T, List<TriggerBehaviour<S, T>>> triggerBehaviours = new HashMap<>();
     private final List<Action2<Transition<S, T>, Object[]>> entryActions = new ArrayList<>();
-    private final List<Action1<Transition<S, T>>> exitActions = new ArrayList<>();
+    private final List<Action2<Transition<S, T>, Object[]>> exitActions = new ArrayList<>();
     private final List<StateRepresentation<S, T>> substates = new ArrayList<>();
     private StateRepresentation<S, T> superstate; // null
 
@@ -85,7 +80,7 @@ public class StateRepresentation<S, T> {
         entryActions.add(0, action);
     }
 
-    public void addExitAction(Action1<Transition<S, T>> action) {
+    public void addExitAction(Action2<Transition<S, T>, Object[]> action) {
         assert action != null : "action is null";
         exitActions.add(action);
     }
@@ -104,15 +99,15 @@ public class StateRepresentation<S, T> {
         }
     }
 
-    public void exit(Transition<S, T> transition) {
+    public void exit(Transition<S, T> transition,  Object... exitArgs) {
         assert transition != null : "transition is null";
 
         if (transition.isReentry()) {
-            executeExitActions(transition);
+            executeExitActions(transition, exitArgs);
         } else if (!includes(transition.getDestination())) {
-            executeExitActions(transition);
+            executeExitActions(transition, exitArgs);
             if (superstate != null) {
-                superstate.exit(transition);
+                superstate.exit(transition,exitArgs);
             }
         }
     }
@@ -125,10 +120,11 @@ public class StateRepresentation<S, T> {
         }
     }
 
-    void executeExitActions(Transition<S, T> transition) {
+    void executeExitActions(Transition<S, T> transition, Object[] exitArgs) {
         assert transition != null : "transition is null";
-        for (Action1<Transition<S, T>> action : exitActions) {
-            action.doIt(transition);
+        assert exitArgs != null : "entryArgs is null";
+        for (Action2<Transition<S, T>, Object[]> action : exitActions) {
+            action.doIt(transition, exitArgs);
         }
     }
 

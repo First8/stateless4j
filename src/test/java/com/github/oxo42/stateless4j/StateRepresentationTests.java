@@ -1,16 +1,13 @@
 package com.github.oxo42.stateless4j;
 
-import com.github.oxo42.stateless4j.delegates.Action1;
-import com.github.oxo42.stateless4j.delegates.Action2;
 import com.github.oxo42.stateless4j.transitions.Transition;
 import com.github.oxo42.stateless4j.triggers.IgnoredTriggerBehaviour;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class StateRepresentationTests {
 
@@ -23,13 +20,7 @@ public class StateRepresentationTests {
         StateRepresentation<State, Trigger> stateRepresentation = CreateRepresentation(State.B);
         Transition<State, Trigger> transition = new Transition<>(State.A, State.B, Trigger.X);
         actualTransition = null;
-        stateRepresentation.addEntryAction(new Action2<Transition<State, Trigger>, Object[]>() {
-
-            @Override
-            public void doIt(Transition<State, Trigger> t, Object[] a) {
-                actualTransition = t;
-            }
-        });
+        stateRepresentation.addEntryAction((t, a) -> actualTransition = t);
         stateRepresentation.enter(transition);
         assertEquals(transition, actualTransition);
     }
@@ -39,13 +30,7 @@ public class StateRepresentationTests {
         StateRepresentation<State, Trigger> stateRepresentation = CreateRepresentation(State.B);
         Transition<State, Trigger> transition = new Transition<>(State.A, State.B, Trigger.X);
         actualTransition = null;
-        stateRepresentation.addEntryAction(new Action2<Transition<State, Trigger>, Object[]>() {
-
-            @Override
-            public void doIt(Transition<State, Trigger> t, Object[] a) {
-                actualTransition = t;
-            }
-        });
+        stateRepresentation.addEntryAction((t, a) -> actualTransition = t);
         stateRepresentation.exit(transition);
         assertNull(actualTransition);
     }
@@ -56,13 +41,7 @@ public class StateRepresentationTests {
         StateRepresentation<State, Trigger> stateRepresentation = CreateRepresentation(State.A);
         Transition<State, Trigger> transition = new Transition<>(State.A, State.B, Trigger.X);
         actualTransition = null;
-        stateRepresentation.addExitAction(new Action1<Transition<State, Trigger>>() {
-
-            @Override
-            public void doIt(Transition<State, Trigger> t) {
-                actualTransition = t;
-            }
-        });
+        stateRepresentation.addExitAction((t,a) -> actualTransition = t);
         stateRepresentation.exit(transition);
         assertEquals(transition, actualTransition);
     }
@@ -72,13 +51,7 @@ public class StateRepresentationTests {
         StateRepresentation<State, Trigger> stateRepresentation = CreateRepresentation(State.A);
         Transition<State, Trigger> transition = new Transition<>(State.A, State.B, Trigger.X);
         actualTransition = null;
-        stateRepresentation.addExitAction(new Action1<Transition<State, Trigger>>() {
-
-            @Override
-            public void doIt(Transition<State, Trigger> t) {
-                actualTransition = t;
-            }
-        });
+        stateRepresentation.addExitAction((t,a) -> actualTransition = t);
         stateRepresentation.enter(transition);
         assertNull(actualTransition);
     }
@@ -142,13 +115,7 @@ public class StateRepresentationTests {
         superState.addSubstate(sub);
         sub.setSuperstate(superState);
 
-        sub.addEntryAction(new Action2<Transition<State, Trigger>, Object[]>() {
-
-            @Override
-            public void doIt(Transition<State, Trigger> t, Object[] a) {
-                executed = true;
-            }
-        });
+        sub.addEntryAction((t, a) -> executed = true);
         Transition<State, Trigger> transition = new Transition<>(superState.getUnderlyingState(), sub.getUnderlyingState(), Trigger.X);
         sub.enter(transition);
         assertTrue(executed);
@@ -162,13 +129,7 @@ public class StateRepresentationTests {
         sub.setSuperstate(superState);
 
         executed = false;
-        sub.addExitAction(new Action1<Transition<State, Trigger>>() {
-
-            @Override
-            public void doIt(Transition<State, Trigger> arg1) {
-                executed = true;
-            }
-        });
+        sub.addExitAction((t,a) -> executed = true);
         Transition<State, Trigger> transition = new Transition<>(sub.getUnderlyingState(), superState.getUnderlyingState(), Trigger.X);
         sub.exit(transition);
         assertTrue(executed);
@@ -182,13 +143,7 @@ public class StateRepresentationTests {
         sub.setSuperstate(superState);
 
         executed = false;
-        superState.addEntryAction(new Action2<Transition<State, Trigger>, Object[]>() {
-
-            @Override
-            public void doIt(Transition<State, Trigger> t, Object[] a) {
-                executed = true;
-            }
-        });
+        superState.addEntryAction((t, a) -> executed = true);
         Transition<State, Trigger> transition = new Transition<>(superState.getUnderlyingState(), sub.getUnderlyingState(), Trigger.X);
         superState.enter(transition);
         assertFalse(executed);
@@ -202,13 +157,7 @@ public class StateRepresentationTests {
         sub.setSuperstate(superState);
 
         executed = false;
-        superState.addExitAction(new Action1<Transition<State, Trigger>>() {
-
-            @Override
-            public void doIt(Transition<State, Trigger> arg1) {
-                executed = true;
-            }
-        });
+        superState.addExitAction((t,a) -> executed = true);
         Transition<State, Trigger> transition = new Transition<>(superState.getUnderlyingState(), sub.getUnderlyingState(), Trigger.X);
         superState.exit(transition);
         assertFalse(executed);
@@ -222,13 +171,7 @@ public class StateRepresentationTests {
         sub.setSuperstate(superState);
 
         executed = false;
-        superState.addEntryAction(new Action2<Transition<State, Trigger>, Object[]>() {
-
-            @Override
-            public void doIt(Transition<State, Trigger> t, Object[] a) {
-                executed = true;
-            }
-        });
+        superState.addEntryAction((t,a) -> executed = true);
         Transition<State, Trigger> transition = new Transition<>(State.C, sub.getUnderlyingState(), Trigger.X);
         sub.enter(transition);
         assertTrue(executed);
@@ -242,13 +185,7 @@ public class StateRepresentationTests {
         sub.setSuperstate(superState);
 
         executed = false;
-        superState.addExitAction(new Action1<Transition<State, Trigger>>() {
-
-            @Override
-            public void doIt(Transition<State, Trigger> arg1) {
-                executed = true;
-            }
-        });
+        superState.addExitAction((t,a) -> executed = true);
         Transition<State, Trigger> transition = new Transition<>(sub.getUnderlyingState(), State.C, Trigger.X);
         sub.exit(transition);
         assertTrue(executed);
@@ -259,22 +196,8 @@ public class StateRepresentationTests {
         final ArrayList<Integer> actual = new ArrayList<>();
 
         StateRepresentation<State, Trigger> rep = CreateRepresentation(State.B);
-        rep.addEntryAction(new Action2<Transition<State, Trigger>, Object[]>() {
-
-            @Override
-            public void doIt(Transition<State, Trigger> arg1, Object[] arg2) {
-                actual.add(0);
-
-            }
-        });
-        rep.addEntryAction(new Action2<Transition<State, Trigger>, Object[]>() {
-
-            @Override
-            public void doIt(Transition<State, Trigger> arg1, Object[] arg2) {
-                actual.add(1);
-
-            }
-        });
+        rep.addEntryAction((arg1, arg2) -> actual.add(0));
+        rep.addEntryAction((arg1, arg2) -> actual.add(1));
 
         rep.enter(new Transition<>(State.A, State.B, Trigger.X));
 
@@ -288,20 +211,8 @@ public class StateRepresentationTests {
         final List<Integer> actual = new ArrayList<>();
 
         StateRepresentation<State, Trigger> rep = CreateRepresentation(State.B);
-        rep.addExitAction(new Action1<Transition<State, Trigger>>() {
-
-            @Override
-            public void doIt(Transition<State, Trigger> arg1) {
-                actual.add(0);
-            }
-        });
-        rep.addExitAction(new Action1<Transition<State, Trigger>>() {
-
-            @Override
-            public void doIt(Transition<State, Trigger> arg1) {
-                actual.add(1);
-            }
-        });
+        rep.addExitAction((t,a) -> actual.add(0));
+        rep.addExitAction((t,a) -> actual.add(1));
 
         rep.exit(new Transition<>(State.B, State.C, Trigger.X));
 
@@ -353,20 +264,8 @@ public class StateRepresentationTests {
         order = 0;
         subOrder = 0;
         superOrder = 0;
-        superState.addEntryAction(new Action2<Transition<State, Trigger>, Object[]>() {
-
-            @Override
-            public void doIt(Transition<State, Trigger> arg1, Object[] arg2) {
-                superOrder = order++;
-            }
-        });
-        sub.addEntryAction(new Action2<Transition<State, Trigger>, Object[]>() {
-
-            @Override
-            public void doIt(Transition<State, Trigger> arg1, Object[] arg2) {
-                subOrder = order++;
-            }
-        });
+        superState.addEntryAction((arg1, arg2) -> superOrder = order++);
+        sub.addEntryAction((arg1, arg2) -> subOrder = order++);
         Transition<State, Trigger> transition = new Transition<>(State.C, sub.getUnderlyingState(), Trigger.X);
         sub.enter(transition);
         assertTrue(superOrder < subOrder);
@@ -382,20 +281,8 @@ public class StateRepresentationTests {
         order = 0;
         subOrder = 0;
         superOrder = 0;
-        superState.addExitAction(new Action1<Transition<State, Trigger>>() {
-
-            @Override
-            public void doIt(Transition<State, Trigger> arg1) {
-                superOrder = order++;
-            }
-        });
-        sub.addExitAction(new Action1<Transition<State, Trigger>>() {
-
-            @Override
-            public void doIt(Transition<State, Trigger> arg1) {
-                subOrder = order++;
-            }
-        });
+        superState.addExitAction((t,a) -> superOrder = order++);
+        sub.addExitAction((t,a) -> subOrder = order++);
         Transition<State, Trigger> transition = new Transition<>(sub.getUnderlyingState(), State.C, Trigger.X);
         sub.exit(transition);
         assertTrue(subOrder < superOrder);

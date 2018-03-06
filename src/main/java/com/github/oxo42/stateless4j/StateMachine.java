@@ -218,7 +218,7 @@ public class StateMachine<S, T> {
         if (triggerBehaviour.resultsInTransitionFrom(source, args, destination)) {
             Transition<S, T> transition = new Transition<>(source, destination.get(), trigger);
 
-            getCurrentRepresentation().exit(transition);
+            getCurrentRepresentation().exit(transition,args);
             triggerBehaviour.performAction(args);
             setState(destination.get());
             getCurrentRepresentation().enter(transition, args);
