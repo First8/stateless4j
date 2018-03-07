@@ -44,4 +44,10 @@ public class DefaultStateMachineContext<S, T> implements StateMachineContext<S, 
     public ContextedStateMachine<S, T> getContextedStateMachine() {
         return contextedStateMachine;
     }
+
+    @Override
+	public Object getAttribute(String name, Object initialValue) {
+    	attributes.putIfAbsent(name,initialValue);
+    	return attributes.get(name);
+	}
 }

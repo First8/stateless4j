@@ -34,6 +34,16 @@ public interface StateMachineContext<S, T> {
     Object getAttribute(String key);
 
     /**
+     * Get a specific attribute from the context attribute map, using the specified key. If
+     * the key has no value it is initialized with the given initial value.
+     *
+     * @param key the key of the specified attribute
+     * @param initialValue the initial value if key is absent
+     * @return the value of the specified key, null if initialValue is null and key was absent.
+     */
+    Object getAttribute(String key, Object initialValue);
+
+    /**
      * Set an attribute on the context attribute map, using the specified key.
      *
      * @param key the name of the key to use for the attribute
@@ -55,4 +65,5 @@ public interface StateMachineContext<S, T> {
      * @return the contexted state machine that this context belongs to
      */
     ContextedStateMachine<S, T> getContextedStateMachine();
+
 }
