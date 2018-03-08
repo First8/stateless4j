@@ -200,4 +200,8 @@ public class StateRepresentation<S, T> {
     public boolean isParallelState() {
         return !this.parallelStates.isEmpty();
     }
+
+    public List<StateRepresentation<S,T>> getSubstates() {
+        return substates;
+    }
 }
