@@ -3,7 +3,7 @@ package com.github.oxo42.stateless4j;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class ContextedStateMachineTests {
+public class ContextStateMachineTests {
 
     @Test
     public void OnEntrySuccessfullyUpdatesContext() {
@@ -15,7 +15,7 @@ public class ContextedStateMachineTests {
         config.configure(State.B)
                 .onEntry(((arg1, arg2) -> arg1.setAttribute("test-key", "123")), DefaultStateMachineContext.class);
 
-        ContextedStateMachine<State, Trigger> contextedStateMachine = new ContextedStateMachine<>(State.A, config);
+        StateMachine<State, Trigger> contextedStateMachine = new StateMachine<>(State.A, config);
 
         Assert.assertEquals(null, contextedStateMachine.getStateMachineContext().getAttribute("test-key"));
 
@@ -35,7 +35,7 @@ public class ContextedStateMachineTests {
         config.configure(State.B)
                 .onEntry(((arg1, arg2) -> arg1.setAttribute("test-key", "123")), DefaultStateMachineContext.class);
 
-        ContextedStateMachine<State, Trigger> contextedStateMachine = new ContextedStateMachine<>(State.A, config);
+        StateMachine<State, Trigger> contextedStateMachine = new StateMachine<>(State.A, config);
 
         contextedStateMachine.fire(Trigger.X);
 
@@ -52,7 +52,7 @@ public class ContextedStateMachineTests {
         config.configure(State.A)
                 .onExit(((arg1, arg2) -> arg1.setAttribute("test-key", "123")), DefaultStateMachineContext.class);
 
-        ContextedStateMachine<State, Trigger> contextedStateMachine = new ContextedStateMachine<>(State.A, config);
+        StateMachine<State, Trigger> contextedStateMachine = new StateMachine<>(State.A, config);
 
         Assert.assertEquals(null, contextedStateMachine.getStateMachineContext().getAttribute("test-key"));
 
@@ -72,7 +72,7 @@ public class ContextedStateMachineTests {
         config.configure(State.A)
                 .onExit(((arg1, arg2) -> arg1.setAttribute("test-key", "123")), DefaultStateMachineContext.class);
 
-        ContextedStateMachine<State, Trigger> contextedStateMachine = new ContextedStateMachine<>(State.A, config);
+        StateMachine<State, Trigger> contextedStateMachine = new StateMachine<>(State.A, config);
 
         contextedStateMachine.fire(Trigger.X);
 
@@ -93,7 +93,7 @@ public class ContextedStateMachineTests {
         config.configure(State.B)
                 .parallel(parallelConfig);
 
-        ContextedStateMachine<State, Trigger> contextedStateMachine = new ContextedStateMachine<>(State.A, config);
+        StateMachine<State, Trigger> contextedStateMachine = new StateMachine<>(State.A, config);
 
         contextedStateMachine.fire(Trigger.X, contextedStateMachine.getStateMachineContext());
         contextedStateMachine.fire(Trigger.Y, contextedStateMachine.getStateMachineContext());

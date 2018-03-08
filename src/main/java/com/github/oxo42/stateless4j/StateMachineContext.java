@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 /**
- * This interface describes a state machine context, which can be used by a {@link ContextedStateMachine} to store context information.
+ * This interface describes a state machine context, which can be used by a {@link StateMachine} to store context information.
  *
  * @param <S> The type used to represent the states of the contexted state machine that this context belongs to
  * @param <T> The type used to represent the triggers that cause state transitions of the contexted state machine that this context belongs to
@@ -12,11 +12,11 @@ import java.util.stream.Stream;
 public interface StateMachineContext<S, T> {
 
     /**
-     * Set the {@link ContextedStateMachine} that this context belongs to.
+     * Set the {@link StateMachine} that this context belongs to.
      *
-     * @param contextedStateMachine The contexted state machine to set
+     * @param stateMachine The state machine to set
      */
-    void setContextedStateMachine(ContextedStateMachine<S, T> contextedStateMachine);
+    void setStateMachine(StateMachine<S, T> stateMachine);
 
     /**
      * Get a map of context attributes. Used to store context information.
@@ -60,10 +60,10 @@ public interface StateMachineContext<S, T> {
     Stream<Map.Entry<String,Object>> attributes();
 
     /**
-     * Get the {@link ContextedStateMachine} that this context belongs to.
+     * Get the {@link StateMachine} that this context belongs to.
      *
      * @return the contexted state machine that this context belongs to
      */
-    ContextedStateMachine<S, T> getContextedStateMachine();
+    StateMachine<S, T> getStateMachine();
 
 }

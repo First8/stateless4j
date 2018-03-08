@@ -13,11 +13,11 @@ public class DefaultStateMachineContext<S, T> implements StateMachineContext<S, 
 
 	private final Map<String,Object> attributes = new HashMap<>();
 
-    private ContextedStateMachine<S, T> contextedStateMachine;
+    private StateMachine<S, T> stateMachine;
 
     @Override
-    public void setContextedStateMachine(ContextedStateMachine<S, T> contextedStateMachine) {
-        this.contextedStateMachine = contextedStateMachine;
+    public void setStateMachine(StateMachine<S, T> contextedStateMachine) {
+        this.stateMachine = contextedStateMachine;
     }
 
     @Override
@@ -41,8 +41,8 @@ public class DefaultStateMachineContext<S, T> implements StateMachineContext<S, 
 	}
 
     @Override
-    public ContextedStateMachine<S, T> getContextedStateMachine() {
-        return contextedStateMachine;
+    public StateMachine<S, T> getStateMachine() {
+        return stateMachine;
     }
 
     @Override

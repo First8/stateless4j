@@ -25,7 +25,6 @@ public class StateMachine<S, T> {
 	protected final StateMachineConfig<S, T> config;
 	protected final Func<S> stateAccessor;
 	protected final Action1<S> stateMutator;
-	private final Map<S, List<StateMachine<S, T>>> parallelStateMachines = new HashMap<>();
 	protected Action2<S, T> unhandledTriggerAction = (state, trigger) -> {
 		throw new IllegalStateException(
 				String.format(
@@ -33,6 +32,9 @@ public class StateMachine<S, T> {
 						state, trigger)
 		);
 	};
+
+	private final StateMachineContext<S, T> stateMachineContext;
+	private final Map<S, List<StateMachine<S, T>>> parallelStateMachines = new HashMap<>();
 
 	/**
 	 * Construct a state machine
@@ -43,22 +45,29 @@ public class StateMachine<S, T> {
 		this(initialState, new StateMachineConfig<>());
 	}
 
+	public StateMachine(final S initialState, final StateMachineConfig<S, T> config) {
+		this(initialState, config, new DefaultStateMachineContext<>());
+	}
+
 	/**
 	 * Construct a state machine
 	 *
 	 * @param initialState The initial state
 	 * @param config       State machine configuration
 	 */
-	public StateMachine(final S initialState, final StateMachineConfig<S, T> config) {
+	public StateMachine(final S initialState, final StateMachineConfig<S, T> config, StateMachineContext<S,T> context) {
 		this.config = config;
+		this.stateMachineContext = context;
 		final StateReference<S, T> reference = new StateReference<>();
 		reference.setState(initialState);
 		stateAccessor = reference::getState;
 		stateMutator = reference::setState;
+		context.setStateMachine(this);
 
 		if (config.isEntryActionOfInitialStateEnabled()) {
 			Transition<S, T> initialTransition = new Transition<>(initialState, initialState, null);
-			getCurrentRepresentation().enter(initialTransition);
+			initializeParallelStateMachines(initialTransition, context);
+			getCurrentRepresentation().enter(initialTransition, context);
 		}
 	}
 
@@ -71,10 +80,22 @@ public class StateMachine<S, T> {
 	 * @param config        State machine configuration
 	 */
 	public StateMachine(final S initialState, final Func<S> stateAccessor, final Action1<S> stateMutator, final StateMachineConfig<S, T> config) {
+		this(initialState,stateAccessor,stateMutator,config, new DefaultStateMachineContext<>());
+	}
+
+	public StateMachine(final S initialState, final Func<S> stateAccessor, final Action1<S> stateMutator, final StateMachineConfig<S, T> config, StateMachineContext<S,T> context) {
 		this.config = config;
+		this.stateMachineContext = context;
 		this.stateAccessor = stateAccessor;
 		this.stateMutator = stateMutator;
 		stateMutator.doIt(initialState);
+		context.setStateMachine(this);
+
+		if (config.isEntryActionOfInitialStateEnabled()) {
+			Transition<S, T> initialTransition = new Transition<>(initialState, initialState, null);
+			initializeParallelStateMachines(initialTransition, context);
+			getCurrentRepresentation().enter(initialTransition, context);
+		}
 	}
 
 	public StateConfiguration<S, T> configure(final S state) {
@@ -83,6 +104,15 @@ public class StateMachine<S, T> {
 
 	public StateMachineConfig<S, T> configuration() {
 		return config;
+	}
+
+	/**
+	 * Get the {@link StateMachineContext} of this contexted state machine. This context allows for the storing of context information for this state machine.
+	 *
+	 * @return the context of this state machine
+	 */
+	public StateMachineContext<S,T> getStateMachineContext() {
+		return stateMachineContext;
 	}
 
 	/**
@@ -260,7 +290,7 @@ public class StateMachine<S, T> {
 		}
 	}
 
-	private void initializeParallelStateMachines(Transition<S, T> transition, Object[] args) {
+	private void initializeParallelStateMachines(Transition<S, T> transition, Object ... args) {
 		// create parallel state machines if we are going to enter a parallel state
 		// the machine is replaced with a new one every time we enter the state.
 		if (getCurrentRepresentation().isParallelState()) {
@@ -270,8 +300,8 @@ public class StateMachine<S, T> {
 		}
 	}
 
-	protected StateMachine<S, T> createParallelStateMachine(ParallelStateMachineConfig<S, T> parallelStateMachineConfig) {
-		return new StateMachine<>(parallelStateMachineConfig.getInitialState(), parallelStateMachineConfig);
+	private StateMachine<S, T> createParallelStateMachine(ParallelStateMachineConfig<S, T> parallelStateMachineConfig) {
+		return new StateMachine<>(parallelStateMachineConfig.getInitialState(), parallelStateMachineConfig, getStateMachineContext());
 	}
 
 	/**
