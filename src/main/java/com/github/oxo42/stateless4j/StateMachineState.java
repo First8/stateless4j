@@ -24,4 +24,12 @@ public class StateMachineState<S> {
 	public List<StateMachineState<S>> getSubStates() {
 		return subStates;
 	}
+
+	@Override
+	public String toString() {
+		return "StateMachineState{" +
+				"state=" + state +
+				", subStates=" + subStates +
+				'}';
+	}
 }
