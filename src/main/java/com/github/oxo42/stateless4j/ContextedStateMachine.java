@@ -90,7 +90,13 @@ public class ContextedStateMachine<S, T> extends StateMachine<S, T> {
      *
      * @return the context of this state machine
      */
-    public StateMachineContext getStateMachineContext() {
+    public StateMachineContext<S,T> getStateMachineContext() {
         return stateMachineContext;
+    }
+
+
+    @Override
+    protected StateMachine<S, T> createParallelStateMachine(ParallelStateMachineConfig<S, T> parallelStateMachineConfig) {
+        return new ContextedStateMachine<>(parallelStateMachineConfig.getInitialState(),parallelStateMachineConfig, getStateMachineContext());
     }
 }

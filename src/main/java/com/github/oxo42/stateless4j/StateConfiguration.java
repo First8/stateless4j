@@ -1,26 +1,13 @@
 package com.github.oxo42.stateless4j;
 
-import static java.util.Objects.requireNonNull;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.github.oxo42.stateless4j.delegates.Action;
-import com.github.oxo42.stateless4j.delegates.Action1;
-import com.github.oxo42.stateless4j.delegates.Action2;
-import com.github.oxo42.stateless4j.delegates.Action3;
-import com.github.oxo42.stateless4j.delegates.Action4;
-import com.github.oxo42.stateless4j.delegates.Func;
-import com.github.oxo42.stateless4j.delegates.Func2;
-import com.github.oxo42.stateless4j.delegates.Func3;
-import com.github.oxo42.stateless4j.delegates.Func4;
-import com.github.oxo42.stateless4j.delegates.FuncBoolean;
+import com.github.oxo42.stateless4j.delegates.*;
 import com.github.oxo42.stateless4j.transitions.Transition;
 import com.github.oxo42.stateless4j.transitions.TransitioningTriggerBehaviour;
-import com.github.oxo42.stateless4j.triggers.DynamicTriggerBehaviour;
-import com.github.oxo42.stateless4j.triggers.IgnoredTriggerBehaviour;
-import com.github.oxo42.stateless4j.triggers.TriggerWithParameters1;
-import com.github.oxo42.stateless4j.triggers.TriggerWithParameters2;
-import com.github.oxo42.stateless4j.triggers.TriggerWithParameters3;
+import com.github.oxo42.stateless4j.triggers.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static java.util.Objects.requireNonNull;
 
 public class StateConfiguration<S, T> {
 
@@ -888,6 +875,12 @@ public class StateConfiguration<S, T> {
         requireNonNull(destinationStateSelector, "destinationStateSelector is null");
         requireNonNull(guard, "guard is null");
         representation.addTriggerBehaviour(new DynamicTriggerBehaviour<>(trigger, destinationStateSelector, guard, action));
+        return this;
+    }
+
+    public StateConfiguration<S, T> parallel(ParallelStateMachineConfig<S, T> stateMachineConfig) {
+        requireNonNull(stateMachineConfig, "stateMachineConfig is null");
+        representation.addParallelStateMachineConfig(stateMachineConfig);
         return this;
     }
 }

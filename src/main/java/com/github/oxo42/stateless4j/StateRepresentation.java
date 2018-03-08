@@ -15,6 +15,7 @@ public class StateRepresentation<S, T> {
     private final List<Action2<Transition<S, T>, Object[]>> exitActions = new ArrayList<>();
     private final List<StateRepresentation<S, T>> substates = new ArrayList<>();
     private StateRepresentation<S, T> superstate; // null
+    private List<ParallelStateMachineConfig<S,T>> parallelStates = new ArrayList<>();
 
     public StateRepresentation(S state) {
         this.state = state;
@@ -186,5 +187,17 @@ public class StateRepresentation<S, T> {
         }
 
         return new ArrayList<>(result);
+    }
+
+    public void addParallelStateMachineConfig(ParallelStateMachineConfig<S,T> stateMachineConfig) {
+        this.parallelStates.add(stateMachineConfig);
+    }
+
+    public List<ParallelStateMachineConfig<S,T>> getParallelStateMachineConfigs() {
+        return this.parallelStates;
+    }
+
+    public boolean isParallelState() {
+        return !this.parallelStates.isEmpty();
     }
 }

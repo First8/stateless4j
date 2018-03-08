@@ -78,4 +78,28 @@ public class ContextedStateMachineTests {
 
         Assert.assertEquals(null, contextedStateMachine.getStateMachineContext().getAttribute("test-key"));
     }
+
+
+    @Test
+    public void OnEntryParallelState() {
+        StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
+
+        ParallelStateMachineConfig<State, Trigger> parallelConfig = new ParallelStateMachineConfig<>(State.C);
+        parallelConfig.configure(State.C)
+                .permit(Trigger.Y, State.D);
+
+        config.configure(State.A)
+                .permit(Trigger.X, State.B);
+        config.configure(State.B)
+                .parallel(parallelConfig);
+
+        ContextedStateMachine<State, Trigger> contextedStateMachine = new ContextedStateMachine<>(State.A, config);
+
+        contextedStateMachine.fire(Trigger.X, contextedStateMachine.getStateMachineContext());
+        contextedStateMachine.fire(Trigger.Y, contextedStateMachine.getStateMachineContext());
+
+        StateMachineState<State> state = contextedStateMachine.getStateMachineState();
+
+        Assert.assertNotNull(state);
+    }
 }
