@@ -101,7 +101,7 @@ public class StateMachine<S, T> {
 	/**
 	 * Retrieves the current state of the state machine including all parallel states active.
 	 *
-	 * @return StateMachineState<S> the state of the state machine.
+	 * @return StateMachineState the state of the state machine.
 	 */
 	public StateMachineState<S> getStateMachineState() {
 		S currentState = getCurrentRepresentation().getUnderlyingState();
