@@ -1,17 +1,22 @@
 package com.github.oxo42.stateless4j;
 
-import com.github.oxo42.stateless4j.transitions.TransitioningTriggerBehaviour;
-import com.github.oxo42.stateless4j.triggers.*;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.github.oxo42.stateless4j.transitions.TransitioningTriggerBehaviour;
+import com.github.oxo42.stateless4j.triggers.TriggerBehaviour;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters1;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters2;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters3;
 
 /**
  * The state machine configuration. Reusable.
@@ -197,5 +202,9 @@ public class StateMachineConfig<TState,TTrigger> {
 
     public Set<TState> getStates() {
         return stateConfiguration.keySet();
+    }
+
+    public Collection<StateRepresentation<TState,TTrigger>> getStateRepresentations() {
+        return stateConfiguration.values();
     }
 }

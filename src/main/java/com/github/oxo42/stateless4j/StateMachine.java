@@ -1,15 +1,22 @@
 package com.github.oxo42.stateless4j;
 
+import static java.util.Objects.requireNonNull;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.github.oxo42.stateless4j.delegates.Action1;
 import com.github.oxo42.stateless4j.delegates.Action2;
 import com.github.oxo42.stateless4j.delegates.Func;
 import com.github.oxo42.stateless4j.transitions.Transition;
-import com.github.oxo42.stateless4j.triggers.*;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.util.Objects.requireNonNull;
+import com.github.oxo42.stateless4j.triggers.TriggerBehaviour;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters1;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters2;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters3;
 
 /**
  * Models behaviour as transitions between a finite set of states
@@ -158,13 +165,13 @@ public class StateMachine<S, T> {
 	private StateMachineState<S> getStateMachineState(StateRepresentation<S,T> currentState) {
 		S state = currentState.getUnderlyingState();
 		StateMachineState<S> stateMachineState = new StateMachineState<>(currentState.getUnderlyingState());
-		if (getCurrentRepresentation().isParallelState()) {
+		if (currentState.isParallelState()) {
 			if (parallelStateMachines.containsKey(state)) {
 				parallelStateMachines.get(state).forEach( psm -> {
 					stateMachineState.getSubStates().add( psm.getStateMachineState());
 				});
 			} else {
-				throw new IllegalStateException("State " + currentState + " is parallel, but no parallel states found.");
+				throw new IllegalStateException("State " + currentState.getUnderlyingState() + " is parallel, but no parallel states found.");
 			}
 		}
 		return stateMachineState;
