@@ -6,10 +6,7 @@ import com.github.oxo42.stateless4j.delegates.Func;
 import com.github.oxo42.stateless4j.transitions.Transition;
 import com.github.oxo42.stateless4j.triggers.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
@@ -134,15 +131,43 @@ public class StateMachine<S, T> {
 	 * @return StateMachineState the state of the state machine.
 	 */
 	public StateMachineState<S> getStateMachineState() {
-		S currentState = getCurrentRepresentation().getUnderlyingState();
+		List<StateRepresentation<S,T>> path = resolvePathToTop(getCurrentRepresentation());
+		return getStateMachineState(path);
+	}
+
+	private List<StateRepresentation<S,T>> resolvePathToTop( StateRepresentation<S,T> stateRepresentation ) {
+		List<StateRepresentation<S,T>> path = new ArrayList<>();
+		path.add(stateRepresentation);
+		StateRepresentation<S,T> next =  stateRepresentation.getSuperstate();
+		while( next != null && !next.isParallelState()) {
+			path.add(0, next);
+			next = next.getSuperstate();
+		}
+		return path;
+	}
+
+	private StateMachineState<S> getStateMachineState(List<StateRepresentation<S,T>> path ) {
+		if( path.size() == 1 ) {
+			return getStateMachineState(path.get(0));
+		}
+		StateMachineState<S> state = getStateMachineState(path.remove(0));
+		state.getSubStates().add(getStateMachineState(path));
+		return state;
+	}
+
+	private StateMachineState<S> getStateMachineState(StateRepresentation<S,T> currentState) {
+		S state = currentState.getUnderlyingState();
+		StateMachineState<S> stateMachineState = new StateMachineState<>(currentState.getUnderlyingState());
 		if (getCurrentRepresentation().isParallelState()) {
-			if (parallelStateMachines.containsKey(currentState)) {
-				return new StateMachineState<>(currentState, parallelStateMachines.get(currentState).stream().map(s -> s.getStateMachineState()).collect(Collectors.toList()));
+			if (parallelStateMachines.containsKey(state)) {
+				parallelStateMachines.get(state).forEach( psm -> {
+					stateMachineState.getSubStates().add( psm.getStateMachineState());
+				});
 			} else {
 				throw new IllegalStateException("State " + currentState + " is parallel, but no parallel states found.");
 			}
 		}
-		return new StateMachineState<>(currentState);
+		return stateMachineState;
 	}
 
 	/**
@@ -296,12 +321,18 @@ public class StateMachine<S, T> {
 		if (getCurrentRepresentation().isParallelState()) {
 			parallelStateMachines.put(getCurrentRepresentation().getUnderlyingState(), new ArrayList<>());
 			getCurrentRepresentation().getParallelStateMachineConfigs().forEach(p -> parallelStateMachines.get(getCurrentRepresentation().getUnderlyingState())
-					.add(createParallelStateMachine(p)));
+					.add(createParallelStateMachine(p,getCurrentRepresentation())));
 		}
 	}
 
-	private StateMachine<S, T> createParallelStateMachine(ParallelStateMachineConfig<S, T> parallelStateMachineConfig) {
-		return new StateMachine<>(parallelStateMachineConfig.getInitialState(), parallelStateMachineConfig, getStateMachineContext());
+	private StateMachine<S, T> createParallelStateMachine(ParallelStateMachineConfig<S, T> parallelStateMachineConfig, StateRepresentation<S,T> parent) {
+		StateMachine<S,T> stateMachine = new StateMachine<>(parallelStateMachineConfig.getInitialState(), parallelStateMachineConfig, getStateMachineContext());
+		stateMachine.getTopLevelStates().forEach( s -> s.setSuperstate(parent));
+		return stateMachine;
+	}
+
+	private List<StateRepresentation<S,T>> getTopLevelStates() {
+		return config.getTopLevelStates().stream().map(config::getRepresentation).collect(Collectors.toList());
 	}
 
 	/**

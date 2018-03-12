@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * The state machine configuration. Reusable.
@@ -188,6 +189,10 @@ public class StateMachineConfig<TState,TTrigger> {
             }
             writer.write("}");
         }
+    }
+
+    public Set<TState> getTopLevelStates() {
+        return stateConfiguration.entrySet().stream().filter( e -> e.getValue().getSuperstate() == null ).map(Map.Entry::getKey).collect(Collectors.toSet());
     }
 
     public Set<TState> getStates() {

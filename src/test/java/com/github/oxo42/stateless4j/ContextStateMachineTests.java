@@ -84,7 +84,7 @@ public class ContextStateMachineTests {
     public void OnEntryParallelState() {
         StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
 
-        ParallelStateMachineConfig<State, Trigger> parallelConfig = new ParallelStateMachineConfig<>(State.C);
+        ParallelStateMachineConfig<State, Trigger> parallelConfig = new ParallelStateMachineConfig<>(State.C, config);
         parallelConfig.configure(State.C)
                 .permit(Trigger.Y, State.D);
 
