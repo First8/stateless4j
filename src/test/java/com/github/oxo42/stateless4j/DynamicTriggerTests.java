@@ -1,12 +1,11 @@
 package com.github.oxo42.stateless4j;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 import com.github.oxo42.stateless4j.delegates.Func;
 import com.github.oxo42.stateless4j.delegates.Func2;
 import com.github.oxo42.stateless4j.triggers.TriggerWithParameters1;
-import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
 
 public class DynamicTriggerTests {
 
@@ -24,7 +23,7 @@ public class DynamicTriggerTests {
         StateMachine<State, Trigger> sm = new StateMachine<>(State.A, config);
         sm.fire(Trigger.X);
 
-        assertEquals(State.B, sm.getState());
+        assertEquals(State.B, sm.getStateMachineState().getState());
     }
 
     @Test
@@ -42,6 +41,6 @@ public class DynamicTriggerTests {
         StateMachine<State, Trigger> sm = new StateMachine<>(State.A, config);
         sm.fire(trigger, 1);
 
-        assertEquals(State.B, sm.getState());
+        assertEquals(State.B, sm.getStateMachineState().getState());
     }
 }

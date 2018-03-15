@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import com.github.oxo42.stateless4j.delegates.Action2;
@@ -36,21 +35,7 @@ public class StateRepresentation<S, T> {
     }
 
     public TriggerBehaviour<S, T> tryFindHandler(T trigger) {
-        // check if the trigger is for parallel state machine and try to relay it
-        TriggerBehaviour<S,T> result = null;
-        if (isParallelState()) {
-            // collect all parallel state machines that can currently handle the trigger.
-            Optional<StateRepresentation<S,T>> possibleTb = parallelStates.stream()
-                    .flatMap(c -> c.getStateRepresentations().stream())
-                    .filter( s -> s.tryFindLocalHandler(trigger) != null)
-                    .findFirst();
-            if( possibleTb.isPresent()) {
-                result = possibleTb.get().tryFindLocalHandler(trigger);
-            }
-        }
-        if( result == null ) {
-            result = tryFindLocalHandler(trigger);
-        }
+        TriggerBehaviour<S, T> result = tryFindLocalHandler(trigger);
         if (result == null && superstate != null) {
             result = superstate.tryFindHandler(trigger);
         }

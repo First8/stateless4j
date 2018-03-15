@@ -1,12 +1,14 @@
 package com.github.oxo42.stateless4j;
 
-import com.github.oxo42.stateless4j.delegates.Action;
-import com.github.oxo42.stateless4j.delegates.FuncBoolean;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+import com.github.oxo42.stateless4j.delegates.Action;
+import com.github.oxo42.stateless4j.delegates.FuncBoolean;
 
 public class StateMachineTests {
 
@@ -41,14 +43,14 @@ public class StateMachineTests {
         StateMachine<S, T> sm = new StateMachine<>(a, config);
         sm.fire(x);
 
-        assertEquals(b, sm.getState());
+        assertEquals(b, sm.getStateMachineState().getState());
     }
 
     @Test
     public void InitialStateIsCurrent() {
         State initial = State.B;
         StateMachine<State, Trigger> sm = new StateMachine<>(initial, new StateMachineConfig<State, Trigger>());
-        assertEquals(initial, sm.getState());
+        assertEquals(initial, sm.getStateMachineState().getState());
     }
 
     @Test
@@ -59,8 +61,8 @@ public class StateMachineTests {
 
         StateMachine<State, Trigger> sm = new StateMachine<>(State.B, config);
 
-        assertEquals(State.B, sm.getState());
-        assertTrue(sm.isInState(State.C));
+        assertEquals(State.B, sm.getStateMachineState().getSubStates().get(0).getState());
+        assertTrue(sm.getStateMachineState().isInState(State.C));
     }
 
     @Test
@@ -76,7 +78,7 @@ public class StateMachineTests {
         StateMachine<State, Trigger> sm = new StateMachine<>(State.B, config);
         sm.fire(Trigger.X);
 
-        assertEquals(State.B, sm.getState());
+        assertEquals(State.B, sm.getStateMachineState().getSubStates().get(0).getState());
     }
 
     @Test
@@ -148,7 +150,7 @@ public class StateMachineTests {
         StateMachine<State, Trigger> sm = new StateMachine<>(State.B, config);
         sm.fire(Trigger.X);
 
-        assertEquals(State.C, sm.getState());
+        assertEquals(State.C, sm.getStateMachineState().getState());
     }
 
     private void setFired() {

@@ -1,8 +1,8 @@
 package com.github.oxo42.stateless4j;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 public class NonEnumTests {
 
@@ -37,7 +37,7 @@ public class NonEnumTests {
         StateMachine<S, T> sm = new StateMachine<>(a, config);
         sm.fire(x);
 
-        assertEquals(b, sm.getState());
+        assertEquals(b, sm.getStateMachineState().getState());
     }
 
 }

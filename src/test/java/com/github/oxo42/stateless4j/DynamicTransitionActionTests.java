@@ -1,8 +1,11 @@
 package com.github.oxo42.stateless4j;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Test;
 import com.github.oxo42.stateless4j.delegates.Action;
 import com.github.oxo42.stateless4j.delegates.Action1;
 import com.github.oxo42.stateless4j.delegates.Action2;
@@ -15,9 +18,6 @@ import com.github.oxo42.stateless4j.delegates.Func4;
 import com.github.oxo42.stateless4j.triggers.TriggerWithParameters1;
 import com.github.oxo42.stateless4j.triggers.TriggerWithParameters2;
 import com.github.oxo42.stateless4j.triggers.TriggerWithParameters3;
-
-import org.junit.Test;
-import static org.junit.Assert.*;
 
 public class DynamicTransitionActionTests {
 	
@@ -137,7 +137,7 @@ public class DynamicTransitionActionTests {
         sm.fire(TriggerY2, new Integer(4), new Integer(6));
         sm.fire(TriggerY3, new Integer(8), new Integer(10), new Integer(12));
 
-        assertEquals(State.A, sm.getState());
+        assertEquals(State.A, sm.getStateMachineState().getState());
         assertEquals(7, list.size());
         assertEquals(new Integer(0), list.get(0));
         assertEquals(new Integer(2), list.get(1));
@@ -171,7 +171,7 @@ public class DynamicTransitionActionTests {
         sm.fire(TriggerY2, new Integer(6), new Integer(9));
         sm.fire(TriggerY3, new Integer(12), new Integer(15), new Integer(18));
 
-        assertEquals(State.A, sm.getState());
+        assertEquals(State.A, sm.getStateMachineState().getState());
         assertEquals(7, list.size());
         assertEquals(new Integer(0), list.get(0));
         assertEquals(new Integer(3), list.get(1));

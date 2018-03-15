@@ -25,6 +25,16 @@ public class StateMachineState<S> {
 		return subStates;
 	}
 
+    /**
+     * Determine if the state machine state currently contains the specified state
+     *
+     * @param state The state to test for
+     * @return True if the state is found, else false
+     */
+	public boolean isInState(S state) {
+        return this.state.equals(state) || this.subStates.stream().anyMatch(s -> s.isInState(state));
+    }
+
 	@Override
 	public String toString() {
 		return "StateMachineState{" +

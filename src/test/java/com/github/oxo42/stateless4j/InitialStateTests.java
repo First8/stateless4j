@@ -1,14 +1,13 @@
 package com.github.oxo42.stateless4j;
 
-import com.github.oxo42.stateless4j.delegates.Action;
-import com.github.oxo42.stateless4j.delegates.Action1;
-import com.github.oxo42.stateless4j.triggers.TriggerWithParameters1;
-
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+import com.github.oxo42.stateless4j.delegates.Action;
+import com.github.oxo42.stateless4j.delegates.Action1;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters1;
 
 public class InitialStateTests {
 
@@ -21,7 +20,7 @@ public class InitialStateTests {
         StateMachineConfig<State, Trigger> config = config(initial);
         
         StateMachine<State, Trigger> sm = new StateMachine<>(initial, config);
-        assertEquals(initial, sm.getState());
+        assertEquals(initial, sm.getStateMachineState().getState());
         assertFalse(executed);
     }
 
@@ -33,7 +32,7 @@ public class InitialStateTests {
         config.enableEntryActionOfInitialState();
         
         StateMachine<State, Trigger> sm = new StateMachine<>(initial, config);
-        assertEquals(initial, sm.getState());
+        assertEquals(initial, sm.getStateMachineState().getState());
         assertTrue(executed);
     }
 
@@ -75,7 +74,7 @@ public class InitialStateTests {
         config.enableEntryActionOfInitialState();
 
         StateMachine<State, Trigger> sm = new StateMachine<>(initial, config);
-        assertEquals(initial, sm.getState());
+        assertEquals(initial, sm.getStateMachineState().getState());
         assertFalse(executed);
     }
 }

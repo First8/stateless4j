@@ -64,6 +64,6 @@ public interface StateMachineContext<S, T> {
      *
      * @return the contexted state machine that this context belongs to
      */
-    StateMachine<S, T> getStateMachine();
+    StateMachine<S, T> getTopLevelStateMachine();
 
 }

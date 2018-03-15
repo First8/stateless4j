@@ -1,11 +1,13 @@
 package com.github.oxo42.stateless4j;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
-
 import com.github.oxo42.stateless4j.delegates.Action;
 
 public class TransitionActionTests {
@@ -57,7 +59,7 @@ public class TransitionActionTests {
         StateMachine<State, Trigger> sm = new StateMachine<>(State.A, config);
         sm.fire(Trigger.Z);
 
-        assertEquals(State.B, sm.getState());
+        assertEquals(State.B, sm.getStateMachineState().getState());
         assertTrue(action.wasPerformed());
     }
 
@@ -80,7 +82,7 @@ public class TransitionActionTests {
         StateMachine<State, Trigger> sm = new StateMachine<>(State.A, config);
         sm.fire(Trigger.Z);
 
-        assertEquals(State.B, sm.getState());
+        assertEquals(State.B, sm.getStateMachineState().getState());
 
         assertEquals(3, list.size());
         assertEquals(new Integer(1), list.get(0));
@@ -100,7 +102,7 @@ public class TransitionActionTests {
         StateMachine<State, Trigger> sm = new StateMachine<>(State.A, config);
         sm.fire(Trigger.X);
 
-        assertEquals(State.C, sm.getState());
+        assertEquals(State.C, sm.getStateMachineState().getState());
         assertTrue(action.wasPerformed());
     }
 
@@ -131,7 +133,7 @@ public class TransitionActionTests {
         StateMachine<State, Trigger> sm = new StateMachine<>(State.A, config);
         sm.fire(Trigger.X);
 
-        assertEquals(State.C, sm.getState());
+        assertEquals(State.C, sm.getStateMachineState().getState());
         assertTrue(correctAction.wasPerformed());
         assertFalse(wrongAction.wasPerformed());
     }
@@ -148,7 +150,7 @@ public class TransitionActionTests {
         StateMachine<State, Trigger> sm = new StateMachine<>(State.A, config);
         sm.fire(Trigger.Z);
         
-        assertEquals(State.A, sm.getState());
+        assertEquals(State.A, sm.getStateMachineState().getState());
         assertTrue(action.wasPerformed());
     }
 
@@ -169,7 +171,7 @@ public class TransitionActionTests {
         StateMachine<State, Trigger> sm = new StateMachine<>(State.A, config);
         sm.fire(Trigger.Z);
         
-        assertEquals(State.A, sm.getState());
+        assertEquals(State.A, sm.getStateMachineState().getState());
         
         assertEquals(3, list.size());
         assertEquals(new Integer(1), list.get(0));
@@ -189,7 +191,7 @@ public class TransitionActionTests {
         StateMachine<State, Trigger> sm = new StateMachine<>(State.A, config);
         sm.fire(Trigger.X);
 
-        assertEquals(State.A, sm.getState());
+        assertEquals(State.A, sm.getStateMachineState().getState());
         assertTrue(action.wasPerformed());
     }
 }

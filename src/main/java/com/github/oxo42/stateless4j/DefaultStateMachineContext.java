@@ -41,7 +41,7 @@ public class DefaultStateMachineContext<S, T> implements StateMachineContext<S, 
 	}
 
     @Override
-    public StateMachine<S, T> getStateMachine() {
+    public StateMachine<S, T> getTopLevelStateMachine() {
         return stateMachine;
     }
 
