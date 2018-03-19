@@ -73,8 +73,8 @@ public class StateMachine<S, T> {
 
         if (config.isEntryActionOfInitialStateEnabled()) {
             Transition<S, T> initialTransition = new Transition<>(initialState, initialState, null);
-            initializeParallelStateMachines(initialTransition, context);
-            getCurrentRepresentation().enter(initialTransition, context);
+            initializeParallelStateMachines();
+            getCurrentRepresentation().initEnter(initialTransition, context);
         }
     }
 
@@ -102,8 +102,8 @@ public class StateMachine<S, T> {
 
         if (config.isEntryActionOfInitialStateEnabled()) {
             Transition<S, T> initialTransition = new Transition<>(initialState, initialState, null);
-            initializeParallelStateMachines(initialTransition, context);
-            getCurrentRepresentation().enter(initialTransition, context);
+            initializeParallelStateMachines();
+            getCurrentRepresentation().initEnter(initialTransition, context);
         }
     }
 
@@ -311,7 +311,7 @@ public class StateMachine<S, T> {
                 getCurrentRepresentation().exit(transition, args);
                 triggerBehaviour.performAction(args);
                 setState(destination.get());
-                initializeParallelStateMachines(transition, args);
+                initializeParallelStateMachines();
                 getCurrentRepresentation().enter(transition, args);
             }
         }
@@ -327,13 +327,14 @@ public class StateMachine<S, T> {
         return handled;
     }
 
-    private void initializeParallelStateMachines(Transition<S, T> transition, Object... args) {
+    private void initializeParallelStateMachines() {
         // create parallel state machines if we are going to enter a parallel state
         // the machine is replaced with a new one every time we enter the state.
         if (getCurrentRepresentation().isParallelState()) {
-            parallelStateMachines.put(getCurrentRepresentation().getUnderlyingState(), new ArrayList<>());
-            getCurrentRepresentation().getParallelStateMachineConfigs().forEach(p -> parallelStateMachines.get(getCurrentRepresentation().getUnderlyingState())
-                    .add(createParallelStateMachine(p, getCurrentRepresentation())));
+            final S underlyingState = getCurrentRepresentation().getUnderlyingState();
+            parallelStateMachines.put(underlyingState, new ArrayList<>());
+            getCurrentRepresentation().getParallelStateMachineConfigs().forEach(pc -> parallelStateMachines.get(underlyingState)
+                    .add(createParallelStateMachine(pc, getCurrentRepresentation())));
         }
     }
 

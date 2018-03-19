@@ -91,6 +91,16 @@ public class StateRepresentation<S, T> {
         exitActions.add(action);
     }
 
+    public void initEnter(Transition<S, T> transition, Object... entryArgs) {
+        assert transition != null : "transition is null";
+
+        if (superstate != null) {
+            superstate.initEnter(transition, entryArgs);
+        }
+
+        executeEntryActions(transition, entryArgs);
+    }
+
     public void enter(Transition<S, T> transition, Object... entryArgs) {
         assert transition != null : "transition is null";
 
