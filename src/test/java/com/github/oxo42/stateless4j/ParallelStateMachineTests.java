@@ -1,11 +1,12 @@
 package com.github.oxo42.stateless4j;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class ParallelStateMachineTests {
 
     @Test
-    public void test() {
+    public void diseaseExample() {
 
         StateMachineConfig<String, String> config = new StateMachineConfig<>();
         config.enableEntryActionOfInitialState();
@@ -48,7 +49,6 @@ public class ParallelStateMachineTests {
 
         machineState = machine.getStateMachineState();
 
-        System.out.println(machineState);
+        Assert.assertTrue(machineState.isInState("infected"));
     }
-
 }

@@ -9,6 +9,7 @@ import java.util.Set;
 
 import com.github.oxo42.stateless4j.delegates.Action2;
 import com.github.oxo42.stateless4j.transitions.Transition;
+import com.github.oxo42.stateless4j.transitions.TransitioningTriggerBehaviour;
 import com.github.oxo42.stateless4j.triggers.TriggerBehaviour;
 
 public class StateRepresentation<S, T> {
@@ -20,7 +21,7 @@ public class StateRepresentation<S, T> {
     private final List<Action2<Transition<S, T>, Object[]>> exitActions = new ArrayList<>();
     private final List<StateRepresentation<S, T>> substates = new ArrayList<>();
     private StateRepresentation<S, T> superstate; // null
-    private List<ParallelStateMachineConfig<S,T>> parallelStates = new ArrayList<>();
+    private List<ParallelStateMachineConfig<S, T>> parallelStates = new ArrayList<>();
 
     public StateRepresentation(S state) {
         this.state = state;
@@ -56,7 +57,8 @@ public class StateRepresentation<S, T> {
         }
 
         if (actual.size() > 1) {
-            throw new IllegalStateException("Multiple permitted exit transitions are configured from state '" + state + "' for trigger '" + trigger + "'. Guard clauses must be mutually exclusive.");
+            throw new IllegalStateException("Multiple permitted exit transitions are configured from state '" + state + "' for trigger '" + trigger
+                    + "'. Guard clauses must be mutually exclusive.");
         }
 
         return actual.isEmpty() ? null : actual.get(0);
@@ -115,7 +117,7 @@ public class StateRepresentation<S, T> {
         }
     }
 
-    public void exit(Transition<S, T> transition,  Object... exitArgs) {
+    public void exit(Transition<S, T> transition, Object... exitArgs) {
         assert transition != null : "transition is null";
 
         if (transition.isReentry()) {
@@ -123,7 +125,7 @@ public class StateRepresentation<S, T> {
         } else if (!includes(transition.getDestination())) {
             executeExitActions(transition, exitArgs);
             if (superstate != null) {
-                superstate.exit(transition,exitArgs);
+                superstate.exit(transition, exitArgs);
             }
         }
     }
@@ -204,11 +206,11 @@ public class StateRepresentation<S, T> {
         return new ArrayList<>(result);
     }
 
-    public void addParallelStateMachineConfig(ParallelStateMachineConfig<S,T> stateMachineConfig) {
+    public void addParallelStateMachineConfig(ParallelStateMachineConfig<S, T> stateMachineConfig) {
         this.parallelStates.add(stateMachineConfig);
     }
 
-    public List<ParallelStateMachineConfig<S,T>> getParallelStateMachineConfigs() {
+    public List<ParallelStateMachineConfig<S, T>> getParallelStateMachineConfigs() {
         return this.parallelStates;
     }
 
@@ -216,7 +218,25 @@ public class StateRepresentation<S, T> {
         return !this.parallelStates.isEmpty();
     }
 
-    public List<StateRepresentation<S,T>> getSubstates() {
+    public List<StateRepresentation<S, T>> getSubstates() {
         return substates;
+    }
+
+    public Set<TransitioningTriggerBehaviour<S, T>> getTransitioningTriggerBehaviours() {
+        Set<TransitioningTriggerBehaviour<S, T>> result = new HashSet<>();
+
+        Set<Map.Entry<T, List<TriggerBehaviour<S, T>>>> entries = triggerBehaviours.entrySet();
+
+        for (Map.Entry<T, List<TriggerBehaviour<S, T>>> entry : entries) {
+            List<TriggerBehaviour<S, T>> triggerBehaviours = entry.getValue();
+
+            triggerBehaviours.forEach(tb -> {
+                if (TransitioningTriggerBehaviour.class.isInstance(tb)) {
+                    result.add((TransitioningTriggerBehaviour<S, T>) tb);
+                }
+            });
+        }
+
+        return result;
     }
 }
