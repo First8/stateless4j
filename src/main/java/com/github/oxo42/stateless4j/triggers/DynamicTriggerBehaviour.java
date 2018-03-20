@@ -1,16 +1,16 @@
 package com.github.oxo42.stateless4j.triggers;
 
 import com.github.oxo42.stateless4j.OutVar;
-import com.github.oxo42.stateless4j.delegates.Action1;
-import com.github.oxo42.stateless4j.delegates.Func2;
-import com.github.oxo42.stateless4j.delegates.FuncBoolean;
+import com.github.oxo42.stateless4j.StateMachineContext;
+import com.github.oxo42.stateless4j.delegates.Action;
+import com.github.oxo42.stateless4j.delegates.Func;
 
 public class DynamicTriggerBehaviour<S, T> extends TriggerBehaviour<S, T> {
 
-    private final Func2<Object[], S> destination;
-    private final Action1<Object[]> action;
+    private final Func<S,S,T> destination;
+    private final Action<S,T> action;
 
-    public DynamicTriggerBehaviour(T trigger, Func2<Object[], S> destination, FuncBoolean guard, Action1<Object[]> action) {
+    public DynamicTriggerBehaviour(T trigger, Func<S,S,T> destination, Func<Boolean,S,T> guard, Action<S,T> action) {
         super(trigger, guard);
         assert destination != null : "destination is null";
         this.destination = destination;
@@ -18,13 +18,14 @@ public class DynamicTriggerBehaviour<S, T> extends TriggerBehaviour<S, T> {
     }
     
     @Override
-    public void performAction(Object[] args) {
-    	action.doIt(args);
+    public void performAction(StateMachineContext<S,T> context, Object[] args) {
+        // TODO check if transition should be null
+        action.doIt(context, null, args);
     }
 
     @Override
-    public boolean resultsInTransitionFrom(S source, Object[] args, OutVar<S> dest) {
-        dest.set(destination.call(args));
+    public boolean resultsInTransitionFrom(StateMachineContext<S,T> context, S source, Object[] args, OutVar<S> dest) {
+        dest.set(destination.call(context,args));
         return true;
     }
 }

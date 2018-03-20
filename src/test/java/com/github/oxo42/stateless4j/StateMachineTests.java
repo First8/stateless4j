@@ -7,8 +7,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.junit.Test;
-import com.github.oxo42.stateless4j.delegates.Action;
-import com.github.oxo42.stateless4j.delegates.FuncBoolean;
 
 public class StateMachineTests {
 
@@ -126,13 +124,7 @@ public class StateMachineTests {
         StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
 
         config.configure(State.B)
-                .permitIf(Trigger.X, State.A, new FuncBoolean() {
-
-                    @Override
-                    public boolean call() {
-                        return false;
-                    }
-                });
+                .permitIf(Trigger.X, State.A, (context, args) -> false);
 
         StateMachine<State, Trigger> sm = new StateMachine<>(State.B, config);
 
@@ -162,13 +154,7 @@ public class StateMachineTests {
         StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
 
         config.configure(State.B)
-                .onEntry(new Action() {
-
-                    @Override
-                    public void doIt() {
-                        setFired();
-                    }
-                })
+                .onEntry(((context, transition, args) -> setFired()))
                 .ignore(Trigger.X);
 
         fired = false;
@@ -184,13 +170,7 @@ public class StateMachineTests {
         StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
 
         config.configure(State.B)
-                .onEntry(new Action() {
-
-                    @Override
-                    public void doIt() {
-                        setFired();
-                    }
-                })
+                .onEntry(((context, transition, args) -> setFired()))
                 .permitReentry(Trigger.X);
 
         fired = false;
@@ -237,7 +217,7 @@ public class StateMachineTests {
 //                	public void doIt(String s, int i) {
 //                		entryArgS = s;
 //                        entryArgI = i;
-//				}); 
+//				});
 //
 //            var suppliedArgS = "something";
 //            var suppliedArgI = 42;

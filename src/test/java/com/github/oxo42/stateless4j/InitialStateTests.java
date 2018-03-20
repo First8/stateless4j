@@ -5,9 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import com.github.oxo42.stateless4j.delegates.Action;
-import com.github.oxo42.stateless4j.delegates.Action1;
-import com.github.oxo42.stateless4j.triggers.TriggerWithParameters1;
+import com.github.oxo42.stateless4j.triggers.ParameterizedTrigger;
 
 public class InitialStateTests {
 
@@ -16,9 +14,9 @@ public class InitialStateTests {
     @Test
     public void testInitialStateEntryActionNotExecuted() {
         final State initial = State.B;
-        
+
         StateMachineConfig<State, Trigger> config = config(initial);
-        
+
         StateMachine<State, Trigger> sm = new StateMachine<>(initial, config);
         assertEquals(initial, sm.getStateMachineState().getState());
         assertFalse(executed);
@@ -27,10 +25,10 @@ public class InitialStateTests {
     @Test
     public void testInitialStateEntryActionExecuted() {
         final State initial = State.B;
-        
+
         StateMachineConfig<State, Trigger> config = config(initial);
         config.enableEntryActionOfInitialState();
-        
+
         StateMachine<State, Trigger> sm = new StateMachine<>(initial, config);
         assertEquals(initial, sm.getStateMachineState().getState());
         assertTrue(executed);
@@ -39,13 +37,7 @@ public class InitialStateTests {
     private StateMachineConfig<State, Trigger> config(final State initial) {
         StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
         config.configure(initial)
-                .onEntry(new Action() {
-
-                    @Override
-                    public void doIt() {
-                        executed = true;
-                    }
-                });
+                .onEntry((context, transition, args) -> executed = true);
         return config;
     }
 
@@ -55,21 +47,9 @@ public class InitialStateTests {
 
         StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
 
-        TriggerWithParameters1<Object, State, Trigger> trigger =
-                config.setTriggerParameters(Trigger.X, Object.class);
+        ParameterizedTrigger<State, Trigger> trigger = config.setTriggerParameters(Trigger.X, Object.class);
 
-        config.configure(initial)
-                .onEntryFrom(
-                        trigger,
-                        new Action1<Object>() {
-
-                            @Override
-                            public void doIt(Object arg1) {
-                                executed = true;
-                            }
-                        },
-                        Object.class
-                );
+        config.configure(initial).onEntryFrom(trigger, (context, transition, args) -> executed = true);
 
         config.enableEntryActionOfInitialState();
 

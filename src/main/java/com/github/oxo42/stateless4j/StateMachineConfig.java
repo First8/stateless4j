@@ -1,22 +1,15 @@
 package com.github.oxo42.stateless4j;
 
+import com.github.oxo42.stateless4j.transitions.TransitioningTriggerBehaviour;
+import com.github.oxo42.stateless4j.triggers.ParameterizedTrigger;
+import com.github.oxo42.stateless4j.triggers.TriggerBehaviour;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-
-import com.github.oxo42.stateless4j.transitions.TransitioningTriggerBehaviour;
-import com.github.oxo42.stateless4j.triggers.TriggerBehaviour;
-import com.github.oxo42.stateless4j.triggers.TriggerWithParameters;
-import com.github.oxo42.stateless4j.triggers.TriggerWithParameters1;
-import com.github.oxo42.stateless4j.triggers.TriggerWithParameters2;
-import com.github.oxo42.stateless4j.triggers.TriggerWithParameters3;
 
 /**
  * The state machine configuration. Reusable.
@@ -24,9 +17,7 @@ import com.github.oxo42.stateless4j.triggers.TriggerWithParameters3;
 public class StateMachineConfig<TState,TTrigger> {
 
     private final Map<TState, StateRepresentation<TState, TTrigger>> stateConfiguration = new HashMap<>();
-    private final Map<TTrigger, TriggerWithParameters<TState, TTrigger>> triggerConfiguration = new HashMap<>();
-
-
+    private final Map<TTrigger, ParameterizedTrigger<TState, TTrigger>> triggerConfiguration = new HashMap<>();
 
     /**
      * Added in 2.5.2.
@@ -93,7 +84,7 @@ public class StateMachineConfig<TState,TTrigger> {
         return result;
     }
 
-    public TriggerWithParameters<TState, TTrigger> getTriggerConfiguration(final TTrigger trigger) {
+    public ParameterizedTrigger<TState, TTrigger> getTriggerConfiguration(final TTrigger trigger) {
         return triggerConfiguration.get(trigger);
     }
 
@@ -110,7 +101,7 @@ public class StateMachineConfig<TState,TTrigger> {
                 this::getOrCreateRepresentation);
     }
 
-    private void saveTriggerConfiguration(final TriggerWithParameters<TState, TTrigger> trigger) {
+    private void saveTriggerConfiguration(final ParameterizedTrigger<TState, TTrigger> trigger) {
         if (triggerConfiguration.containsKey(trigger.getTrigger())) {
             throw new IllegalStateException("Parameters for the trigger '" + trigger + "' have already been configured.");
         }
@@ -122,55 +113,13 @@ public class StateMachineConfig<TState,TTrigger> {
      * Specify the arguments that must be supplied when a specific trigger is fired
      *
      * @param trigger The underlying trigger value
-     * @param classe0 Class argument
-     * @param <TArg0> Type of the first trigger argument
      * @return An object that can be passed to the fire() method in order to fire the parameterised trigger
      */
-    public <TArg0> TriggerWithParameters1<TArg0, TState, TTrigger> setTriggerParameters(
+    public ParameterizedTrigger<TState, TTrigger> setTriggerParameters(
             final TTrigger trigger,
-            final Class<TArg0> classe0) {
-        TriggerWithParameters1<TArg0, TState, TTrigger> configuration = new TriggerWithParameters1<>(trigger, classe0);
-        saveTriggerConfiguration(configuration);
-        return configuration;
-    }
+            final Class ... types) {
 
-    /**
-     * Specify the arguments that must be supplied when a specific trigger is fired
-     *
-     * @param trigger The underlying trigger value
-     * @param classe0 Class argument
-     * @param classe1 Class argument
-     * @param <TArg0> Type of the first trigger argument
-     * @param <TArg1> Type of the second trigger argument
-     * @return An object that can be passed to the fire() method in order to fire the parameterised trigger
-     */
-    public <TArg0, TArg1> TriggerWithParameters2<TArg0, TArg1, TState, TTrigger> setTriggerParameters(
-            final TTrigger trigger,
-            final Class<TArg0> classe0,
-            final Class<TArg1> classe1) {
-        TriggerWithParameters2<TArg0, TArg1, TState, TTrigger> configuration = new TriggerWithParameters2<>(trigger, classe0, classe1);
-        saveTriggerConfiguration(configuration);
-        return configuration;
-    }
-
-    /**
-     * Specify the arguments that must be supplied when a specific trigger is fired
-     *
-     * @param trigger The underlying trigger value
-     * @param classe0 Class argument
-     * @param classe1 Class argument
-     * @param classe2 Class argument
-     * @param <TArg0> Type of the first trigger argument
-     * @param <TArg1> Type of the second trigger argument
-     * @param <TArg2> Type of the third trigger argument
-     * @return An object that can be passed to the fire() method in order to fire the parameterised trigger
-     */
-    public <TArg0, TArg1, TArg2> TriggerWithParameters3<TArg0, TArg1, TArg2, TState, TTrigger> setTriggerParameters(
-            final TTrigger trigger,
-            final Class<TArg0> classe0,
-            final Class<TArg1> classe1,
-            final Class<TArg2> classe2) {
-        TriggerWithParameters3<TArg0, TArg1, TArg2, TState, TTrigger> configuration = new TriggerWithParameters3<>(trigger, classe0, classe1, classe2);
+        ParameterizedTrigger<TState, TTrigger> configuration = new ParameterizedTrigger<>(trigger, types);
         saveTriggerConfiguration(configuration);
         return configuration;
     }
@@ -186,7 +135,7 @@ public class StateMachineConfig<TState,TTrigger> {
                     for (TriggerBehaviour<TState, TTrigger> triggerBehaviour : behaviour.getValue()) {
                         if (triggerBehaviour instanceof TransitioningTriggerBehaviour) {
                             destination.set(null);
-                            triggerBehaviour.resultsInTransitionFrom(null, null, destination);
+                            triggerBehaviour.resultsInTransitionFrom(null,null, null, destination);
                             writer.write(String.format("\t%s -> %s;\n", entry.getKey(), destination));
                         }
                     }

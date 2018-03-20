@@ -2,7 +2,7 @@ package com.github.oxo42.stateless4j.triggers;
 
 import com.github.oxo42.stateless4j.conversion.ParameterConversion;
 
-public abstract class TriggerWithParameters<TState, TTrigger> {
+public class ParameterizedTrigger<TState, TTrigger> {
 
     private final TTrigger underlyingTrigger;
     private final Class<?>[] argumentTypes;
@@ -13,7 +13,7 @@ public abstract class TriggerWithParameters<TState, TTrigger> {
      * @param underlyingTrigger Trigger represented by this trigger configuration
      * @param argumentTypes     The argument types expected by the trigger
      */
-    public TriggerWithParameters(final TTrigger underlyingTrigger, final Class<?>... argumentTypes) {
+    public ParameterizedTrigger(final TTrigger underlyingTrigger, final Class<?>... argumentTypes) {
         assert argumentTypes != null : "argumentTypes is null";
 
         this.underlyingTrigger = underlyingTrigger;
@@ -35,7 +35,13 @@ public abstract class TriggerWithParameters<TState, TTrigger> {
      * @param args Args
      */
     public void validateParameters(Object[] args) {
-        assert args != null : "args is null";
-        ParameterConversion.validate(args, argumentTypes);
+        if( args != null ) {
+            ParameterConversion.validate(args, argumentTypes);
+        } else {
+            if( argumentTypes.length > 0 ) {
+                throw new IllegalStateException(
+                        String.format("Not enough parameters have been supplied. Expecting %s but got 0.", argumentTypes.length));
+            }
+        }
     }
 }
