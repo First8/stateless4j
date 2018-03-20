@@ -1,12 +1,14 @@
 package com.github.oxo42.stateless4j.delegates;
 
+import com.github.oxo42.stateless4j.StateMachineContext;
+
 /**
  * Represents an operation that accepts an input and returns no result
  *
  * @param <T>  The type of the input
  * @param <T1> The type of the input
  */
-public interface Action2<T, T1> {
+public interface Action2<S,T,U,U1> {
 
     /**
      * Performs this operation on the given input
@@ -14,5 +16,5 @@ public interface Action2<T, T1> {
      * @param arg1 Input argument
      * @param arg2 Input argument
      */
-    void doIt(T arg1, T1 arg2);
+    void doIt(StateMachineContext<S,T> context, U arg1, U1 arg2);
 }
