@@ -29,8 +29,8 @@ public class StateMachine<S, T> {
 
     protected final StateMachineConfig<S, T> config;
     protected final Func<S> stateAccessor;
-    protected final Action1<S> stateMutator;
-    protected Action2<S, T> unhandledTriggerAction = (state, trigger) -> {
+    protected final Action1<StateMachineContext, S> stateMutator;
+    protected Action2<StateMachineContext, S, T> unhandledTriggerAction = (stateMachineContext, state, trigger) -> {
         throw new IllegalStateException(
                 String.format(
                         "No valid leaving transitions are permitted from state '%s' for trigger '%s'. Consider ignoring the trigger.",
@@ -60,7 +60,7 @@ public class StateMachine<S, T> {
      * @param initialState The initial state
      * @param config       State machine configuration
      */
-    public StateMachine(final S initialState, final StateMachineConfig<S, T> config, StateMachineContext<S, T> context) {
+    public StateMachine(final S initialState, final StateMachineConfig<S, T> config, final StateMachineContext<S, T> context) {
         this.config = config;
         this.stateMachineContext = context;
         final StateReference<S, T> reference = new StateReference<>();
@@ -74,7 +74,7 @@ public class StateMachine<S, T> {
         if (config.isEntryActionOfInitialStateEnabled()) {
             Transition<S, T> initialTransition = new Transition<>(initialState, initialState, null);
             initializeParallelStateMachines();
-            getCurrentRepresentation().initEnter(initialTransition, context);
+            getCurrentRepresentation().initEnter(context, initialTransition);
         }
     }
 
@@ -95,7 +95,7 @@ public class StateMachine<S, T> {
         this.stateMachineContext = context;
         this.stateAccessor = stateAccessor;
         this.stateMutator = stateMutator;
-        stateMutator.doIt(initialState);
+        stateMutator.doIt(context, initialState);
         if (context.getTopLevelStateMachine() == null) {
             context.setStateMachine(this);
         }
@@ -103,7 +103,7 @@ public class StateMachine<S, T> {
         if (config.isEntryActionOfInitialStateEnabled()) {
             Transition<S, T> initialTransition = new Transition<>(initialState, initialState, null);
             initializeParallelStateMachines();
-            getCurrentRepresentation().initEnter(initialTransition, context);
+            getCurrentRepresentation().initEnter(context, initialTransition);
         }
     }
 
@@ -134,7 +134,7 @@ public class StateMachine<S, T> {
     }
 
     private void setState(S value) {
-        stateMutator.doIt(value);
+        stateMutator.doIt(stateMachineContext, value);
     }
 
     /**
@@ -287,7 +287,7 @@ public class StateMachine<S, T> {
 
     protected void publicFire(final T trigger, final Object... args) {
         if (!privateFire(trigger, args)) {
-            unhandledTriggerAction.doIt(getCurrentRepresentation().getUnderlyingState(), trigger);
+            unhandledTriggerAction.doIt(stateMachineContext, getCurrentRepresentation().getUnderlyingState(), trigger);
         }
     }
 
@@ -353,7 +353,7 @@ public class StateMachine<S, T> {
      *
      * @param unhandledTriggerAction An action to call when an unhandled trigger is fired
      */
-    public void onUnhandledTrigger(final Action2<S, T> unhandledTriggerAction) {
+    public void onUnhandledTrigger(final Action2<StateMachineContext, S, T> unhandledTriggerAction) {
         if (unhandledTriggerAction == null) {
             throw new IllegalStateException("unhandledTriggerAction");
         }

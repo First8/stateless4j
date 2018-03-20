@@ -17,8 +17,8 @@ public class StateRepresentation<S, T> {
     private final S state;
 
     private final Map<T, List<TriggerBehaviour<S, T>>> triggerBehaviours = new HashMap<>();
-    private final List<Action2<Transition<S, T>, Object[]>> entryActions = new ArrayList<>();
-    private final List<Action2<Transition<S, T>, Object[]>> exitActions = new ArrayList<>();
+    private final List<Action2<StateMachineContext<S, T>, Transition<S, T>, Object[]>> entryActions = new ArrayList<>();
+    private final List<Action2<StateMachineContext<S, T>, Transition<S, T>, Object[]>> exitActions = new ArrayList<>();
     private final List<StateRepresentation<S, T>> substates = new ArrayList<>();
     private StateRepresentation<S, T> superstate; // null
     private List<ParallelStateMachineConfig<S, T>> parallelStates = new ArrayList<>();
@@ -64,85 +64,85 @@ public class StateRepresentation<S, T> {
         return actual.isEmpty() ? null : actual.get(0);
     }
 
-    public void addEntryAction(final T trigger, final Action2<Transition<S, T>, Object[]> action) {
+    public void addEntryAction(final T trigger, final Action2<StateMachineContext<S, T>, Transition<S, T>, Object[]> action) {
         assert action != null : "action is null";
 
-        entryActions.add(new Action2<Transition<S, T>, Object[]>() {
+        entryActions.add(new Action2<StateMachineContext<S, T>, Transition<S, T>, Object[]>() {
             @Override
-            public void doIt(Transition<S, T> t, Object[] args) {
+            public void doIt(StateMachineContext<S, T> context, Transition<S, T> t, Object[] args) {
                 T trans_trigger = t.getTrigger();
                 if (trans_trigger != null && trans_trigger.equals(trigger)) {
-                    action.doIt(t, args);
+                    action.doIt(context, t, args);
                 }
             }
         });
     }
 
-    public void addEntryAction(Action2<Transition<S, T>, Object[]> action) {
+    public void addEntryAction(Action2<StateMachineContext<S, T>, Transition<S, T>, Object[]> action) {
         assert action != null : "action is null";
         entryActions.add(action);
     }
 
-    public void insertEntryAction(Action2<Transition<S, T>, Object[]> action) {
+    public void insertEntryAction(Action2<StateMachineContext<S, T>, Transition<S, T>, Object[]> action) {
         assert action != null : "action is null";
         entryActions.add(0, action);
     }
 
-    public void addExitAction(Action2<Transition<S, T>, Object[]> action) {
+    public void addExitAction(Action2<StateMachineContext<S, T>, Transition<S, T>, Object[]> action) {
         assert action != null : "action is null";
         exitActions.add(action);
     }
 
-    public void initEnter(Transition<S, T> transition, Object... entryArgs) {
+    public void initEnter(StateMachineContext<S, T> context, Transition<S, T> transition, Object... entryArgs) {
         assert transition != null : "transition is null";
 
         if (superstate != null) {
-            superstate.initEnter(transition, entryArgs);
+            superstate.initEnter(context, transition, entryArgs);
         }
 
-        executeEntryActions(transition, entryArgs);
+        executeEntryActions(context, transition, entryArgs);
     }
 
-    public void enter(Transition<S, T> transition, Object... entryArgs) {
+    public void enter(StateMachineContext<S, T> context, Transition<S, T> transition, Object... entryArgs) {
         assert transition != null : "transition is null";
 
         if (transition.isReentry()) {
-            executeEntryActions(transition, entryArgs);
+            executeEntryActions(context, transition, entryArgs);
         } else if (!includes(transition.getSource())) {
             if (superstate != null) {
-                superstate.enter(transition, entryArgs);
+                superstate.enter(context, transition, entryArgs);
             }
 
-            executeEntryActions(transition, entryArgs);
+            executeEntryActions(context, transition, entryArgs);
         }
     }
 
-    public void exit(Transition<S, T> transition, Object... exitArgs) {
+    public void exit(StateMachineContext<S, T> context, Transition<S, T> transition, Object... exitArgs) {
         assert transition != null : "transition is null";
 
         if (transition.isReentry()) {
-            executeExitActions(transition, exitArgs);
+            executeExitActions(context, transition, exitArgs);
         } else if (!includes(transition.getDestination())) {
-            executeExitActions(transition, exitArgs);
+            executeExitActions(context, transition, exitArgs);
             if (superstate != null) {
-                superstate.exit(transition, exitArgs);
+                superstate.exit(context, transition, exitArgs);
             }
         }
     }
 
-    void executeEntryActions(Transition<S, T> transition, Object[] entryArgs) {
+    void executeEntryActions(StateMachineContext<S, T> context, Transition<S, T> transition, Object[] entryArgs) {
         assert transition != null : "transition is null";
         assert entryArgs != null : "entryArgs is null";
-        for (Action2<Transition<S, T>, Object[]> action : entryActions) {
-            action.doIt(transition, entryArgs);
+        for (Action2<StateMachineContext<S, T>, Transition<S, T>, Object[]> action : entryActions) {
+            action.doIt(context, transition, entryArgs);
         }
     }
 
-    void executeExitActions(Transition<S, T> transition, Object[] exitArgs) {
+    void executeExitActions(StateMachineContext<S, T> context, Transition<S, T> transition, Object[] exitArgs) {
         assert transition != null : "transition is null";
         assert exitArgs != null : "entryArgs is null";
-        for (Action2<Transition<S, T>, Object[]> action : exitActions) {
-            action.doIt(transition, exitArgs);
+        for (Action2<StateMachineContext<S, T>, Transition<S, T>, Object[]> action : exitActions) {
+            action.doIt(context, transition, exitArgs);
         }
     }
 

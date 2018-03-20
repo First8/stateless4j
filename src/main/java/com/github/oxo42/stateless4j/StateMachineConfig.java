@@ -26,8 +26,6 @@ public class StateMachineConfig<TState,TTrigger> {
     private final Map<TState, StateRepresentation<TState, TTrigger>> stateConfiguration = new HashMap<>();
     private final Map<TTrigger, TriggerWithParameters<TState, TTrigger>> triggerConfiguration = new HashMap<>();
 
-
-
     /**
      * Added in 2.5.2.
      * Default MUST be false for backward compatibility reasons. Prior to 2.5.2,

@@ -1,24 +1,38 @@
 package com.github.oxo42.stateless4j;
 
-import com.github.oxo42.stateless4j.delegates.*;
-import com.github.oxo42.stateless4j.transitions.Transition;
-import com.github.oxo42.stateless4j.transitions.TransitioningTriggerBehaviour;
-import com.github.oxo42.stateless4j.triggers.*;
+import static java.util.Objects.requireNonNull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static java.util.Objects.requireNonNull;
+import com.github.oxo42.stateless4j.delegates.Action;
+import com.github.oxo42.stateless4j.delegates.Action1;
+import com.github.oxo42.stateless4j.delegates.Action2;
+import com.github.oxo42.stateless4j.delegates.Action3;
+import com.github.oxo42.stateless4j.delegates.Action4;
+import com.github.oxo42.stateless4j.delegates.Func;
+import com.github.oxo42.stateless4j.delegates.Func2;
+import com.github.oxo42.stateless4j.delegates.Func3;
+import com.github.oxo42.stateless4j.delegates.Func4;
+import com.github.oxo42.stateless4j.delegates.FuncBoolean;
+import com.github.oxo42.stateless4j.transitions.Transition;
+import com.github.oxo42.stateless4j.transitions.TransitioningTriggerBehaviour;
+import com.github.oxo42.stateless4j.triggers.DynamicTriggerBehaviour;
+import com.github.oxo42.stateless4j.triggers.IgnoredTriggerBehaviour;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters1;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters2;
+import com.github.oxo42.stateless4j.triggers.TriggerWithParameters3;
 
 public class StateConfiguration<S, T> {
 
     private static final FuncBoolean NO_GUARD = () -> true;
-    private static final Action NO_ACTION = () -> { };
-    private static final Action1<Object[]> NO_ACTION_N = args -> { };
+    private static final Action NO_ACTION = (stateMachineContext) -> { };
+    private static final Action1<StateMachineContext, Object[]> NO_ACTION_N = (stateMachineContext, args) -> { };
     private final StateRepresentation<S, T> representation;
     private final Func2<S, StateRepresentation<S, T>> lookup;
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public StateConfiguration(final StateRepresentation<S, T> representation, final Func2<S, StateRepresentation<S, T>> lookup) {
+    public StateConfiguration(final StateRepresentation<S, T> representation, final Func2<S,
+            StateRepresentation<S, T>> lookup) {
         this.representation = requireNonNull(representation, "representation is null");
         this.lookup = requireNonNull(lookup,  "lookup is null");
     }
@@ -184,7 +198,8 @@ public class StateConfiguration<S, T> {
      */
     public StateConfiguration<S, T> onEntry(final Action entryAction) {
         requireNonNull(entryAction, "entryAction is null");
-        return onEntry(t -> entryAction.doIt());
+        representation.addEntryAction((context, transation, args) -> entryAction.doIt(context));
+        return this;
     }
 
     /**
@@ -193,9 +208,9 @@ public class StateConfiguration<S, T> {
      * @param entryAction Action to execute, providing details of the transition
      * @return The receiver
      */
-    public StateConfiguration<S, T> onEntry(final Action1<Transition<S, T>> entryAction) {
+    public StateConfiguration<S, T> onEntry(final Action1<StateMachineContext, Transition<S, T>> entryAction) {
         requireNonNull(entryAction, "entryAction is null");
-        representation.addEntryAction((transition, args) -> entryAction.doIt(transition));
+        representation.addEntryAction((context, transition, args) -> entryAction.doIt(context, transition));
         return this;
     }
 
@@ -232,7 +247,7 @@ public class StateConfiguration<S, T> {
      */
     public StateConfiguration<S, T> onEntryFrom(final T trigger, final Action entryAction) {
         requireNonNull(entryAction, "entryAction is null");
-        return onEntryFrom(trigger, transition -> entryAction.doIt());
+        return onEntryFrom(context, trigger, transition -> entryAction.doIt(context));
     }
 
     /**
@@ -242,9 +257,9 @@ public class StateConfiguration<S, T> {
      * @param entryAction Action to execute, providing details of the transition
      * @return The receiver
      */
-    public StateConfiguration<S, T> onEntryFrom(final T trigger, final Action1<Transition<S, T>> entryAction) {
+    public StateConfiguration<S, T> onEntryFrom(final T trigger, final Action1<StateMachineContext<S, T>, Transition<S, T>> entryAction) {
         requireNonNull(entryAction, "entryAction is null");
-        representation.addEntryAction(trigger, (transition, args) -> entryAction.doIt(transition));
+        representation.addEntryAction(trigger, (stateMachineContext, transition, args) -> entryAction.doIt(stateMachineContext, transition));
         return this;
     }
 

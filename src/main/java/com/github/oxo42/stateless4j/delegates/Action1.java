@@ -7,12 +7,12 @@ import com.github.oxo42.stateless4j.StateMachineContext;
  *
  * @param <T> The type of the input to the operation
  */
-public interface Action1<S,T,U> {
+public interface Action1<S extends StateMachineContext, U> {
 
     /**
      * Performs this operation on the given input
      *
      * @param arg1 Input argument
      */
-    void doIt(StateMachineContext<S,T> context, U arg1);
+    void doIt(S context, U arg1);
 }
