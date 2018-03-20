@@ -27,4 +27,8 @@ public class TransitioningTriggerBehaviour<S, T> extends TriggerBehaviour<S, T> 
         dest.set(destination);
         return true;
     }
+
+    public S getDestination() {
+        return destination;
+    }
 }

@@ -9,13 +9,11 @@ import java.util.List;
 
 import org.junit.Test;
 import com.github.oxo42.stateless4j.delegates.Action;
+import com.github.oxo42.stateless4j.transitions.Transition;
 
 public class TransitionActionTests {
 
-    final Enum StateA = State.A, StateB = State.B, StateC = State.C,
-            TriggerX = Trigger.X, TriggerY = Trigger.Y;
-
-    private class TripwireAction implements Action {
+    private class TripwireAction implements Action<State, Trigger> {
         private boolean beenThere;
 
         public TripwireAction() {
@@ -27,12 +25,12 @@ public class TransitionActionTests {
         }
 
         @Override
-        public void doIt() {
+        public void doIt(StateMachineContext<State, Trigger> context, Transition<State, Trigger> transition, Object... args) {
             beenThere = true;
         }
     }
 
-    private class CountingAction implements Action {
+    private class CountingAction implements Action<State, Trigger> {
         private List<Integer> numbers;
         private Integer number;
 
@@ -42,7 +40,7 @@ public class TransitionActionTests {
         }
 
         @Override
-        public void doIt() {
+        public void doIt(StateMachineContext<State, Trigger> context, Transition<State, Trigger> transition, Object... args) {
             numbers.add(this.number);
         }
     }
@@ -68,9 +66,9 @@ public class TransitionActionTests {
         StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
 
         List<Integer> list = new ArrayList<Integer>();
-        Action exitAction = new CountingAction(list, new Integer(1));
-        Action transitionAction = new CountingAction(list, new Integer(2));
-        Action entryAction = new CountingAction(list, new Integer(3));
+        Action<State, Trigger> exitAction = new CountingAction(list, new Integer(1));
+        Action<State, Trigger> transitionAction = new CountingAction(list, new Integer(2));
+        Action<State, Trigger> entryAction = new CountingAction(list, new Integer(3));
 
         config.configure(State.A)
                 .onExit(exitAction)
@@ -149,7 +147,7 @@ public class TransitionActionTests {
 
         StateMachine<State, Trigger> sm = new StateMachine<>(State.A, config);
         sm.fire(Trigger.Z);
-        
+
         assertEquals(State.A, sm.getStateMachineState().getState());
         assertTrue(action.wasPerformed());
     }
@@ -157,11 +155,11 @@ public class TransitionActionTests {
     @Test
     public void ReentryActionIsPerformedBetweenExitAndEntry() {
         StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
-        
+
         List<Integer> list = new ArrayList<Integer>();
-        Action entryAction = new CountingAction(list, new Integer(3));
-        Action transitionAction = new CountingAction(list, new Integer(2));
-        Action exitAction = new CountingAction(list, new Integer(1));
+        Action<State, Trigger> entryAction = new CountingAction(list, new Integer(3));
+        Action<State, Trigger> transitionAction = new CountingAction(list, new Integer(2));
+        Action<State, Trigger> exitAction = new CountingAction(list, new Integer(1));
 
         config.configure(State.A)
         		.onEntry(entryAction)
@@ -170,19 +168,19 @@ public class TransitionActionTests {
 
         StateMachine<State, Trigger> sm = new StateMachine<>(State.A, config);
         sm.fire(Trigger.Z);
-        
+
         assertEquals(State.A, sm.getStateMachineState().getState());
-        
+
         assertEquals(3, list.size());
         assertEquals(new Integer(1), list.get(0));
         assertEquals(new Integer(2), list.get(1));
         assertEquals(new Integer(3), list.get(2));
     }
-    
+
     @Test
     public void ActionWithPositiveGuardIsPerformedOnReentry() {
         StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
-        
+
         TripwireAction action = new TripwireAction();
 
         config.configure(State.A)

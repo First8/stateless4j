@@ -1,12 +1,17 @@
 package com.github.oxo42.stateless4j;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.github.oxo42.stateless4j.delegates.Action;
 import com.github.oxo42.stateless4j.transitions.Transition;
 import com.github.oxo42.stateless4j.transitions.TransitioningTriggerBehaviour;
 import com.github.oxo42.stateless4j.triggers.ParameterizedTrigger;
 import com.github.oxo42.stateless4j.triggers.TriggerBehaviour;
-
-import java.util.*;
 
 public class StateRepresentation<S, T> {
 
@@ -27,19 +32,19 @@ public class StateRepresentation<S, T> {
         return triggerBehaviours;
     }
 
-    public Boolean canHandle(T trigger) {
-        return tryFindHandler(trigger) != null;
+    public Boolean canHandle(StateMachineContext<S, T> context, T trigger, Object ... args) {
+        return tryFindHandler(context, trigger, args) != null;
     }
 
-    public TriggerBehaviour<S, T> tryFindHandler(T trigger) {
-        TriggerBehaviour<S, T> result = tryFindLocalHandler(trigger);
+    public TriggerBehaviour<S, T> tryFindHandler(StateMachineContext<S, T> context, T trigger, Object ... args) {
+        TriggerBehaviour<S, T> result = tryFindLocalHandler(context, trigger, args);
         if (result == null && superstate != null) {
-            result = superstate.tryFindHandler(trigger);
+            result = superstate.tryFindHandler(context, trigger, args);
         }
         return result;
     }
 
-    TriggerBehaviour<S, T> tryFindLocalHandler(T trigger/*, out TriggerBehaviour handler*/) {
+    TriggerBehaviour<S, T> tryFindLocalHandler(StateMachineContext<S, T> context, T trigger, Object ... args) {
         List<TriggerBehaviour<S, T>> possible = triggerBehaviours.get(trigger);
         if (possible == null) {
             return null;
@@ -47,7 +52,7 @@ public class StateRepresentation<S, T> {
 
         List<TriggerBehaviour<S, T>> actual = new ArrayList<>();
         for (TriggerBehaviour<S, T> triggerBehaviour : possible) {
-            if (triggerBehaviour.isGuardConditionMet()) {
+            if (triggerBehaviour.isGuardConditionMet(context, args)) {
                 actual.add(triggerBehaviour);
             }
         }
@@ -188,7 +193,7 @@ public class StateRepresentation<S, T> {
 
         for (T t : triggerBehaviours.keySet()) {
             for (TriggerBehaviour<S, T> v : triggerBehaviours.get(t)) {
-                if (v.isGuardConditionMet()) {
+                if (v.isGuardConditionMet(null, null)) {
                     result.add(t);
                     break;
                 }

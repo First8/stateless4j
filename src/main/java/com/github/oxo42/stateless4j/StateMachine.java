@@ -1,16 +1,20 @@
 package com.github.oxo42.stateless4j;
 
+import static java.util.Objects.requireNonNull;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.github.oxo42.stateless4j.delegates.Action;
 import com.github.oxo42.stateless4j.delegates.StateAccessor;
 import com.github.oxo42.stateless4j.delegates.StateMutator;
 import com.github.oxo42.stateless4j.transitions.Transition;
-import com.github.oxo42.stateless4j.triggers.TriggerBehaviour;
 import com.github.oxo42.stateless4j.triggers.ParameterizedTrigger;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.util.Objects.requireNonNull;
+import com.github.oxo42.stateless4j.triggers.TriggerBehaviour;
 
 /**
  * Models behaviour as transitions between a finite set of states
@@ -23,6 +27,7 @@ public class StateMachine<S, T> {
     protected final StateMachineConfig<S, T> config;
     protected final StateAccessor<S> stateAccessor;
     protected final StateMutator<S> stateMutator;
+    private final StateMachine<S, T> parentStateMachine;
     protected Action<S, T> unhandledTriggerAction = (stateMachineContext, transition, args) -> {
         throw new IllegalStateException(
                 String.format(
@@ -47,15 +52,20 @@ public class StateMachine<S, T> {
         this(initialState, config, new DefaultStateMachineContext<>());
     }
 
+    public StateMachine(final S initialState, final StateMachineConfig<S, T> config, StateMachineContext<S, T> context) {
+        this(initialState, config, context, null);
+    }
+
     /**
      * Construct a state machine
      *
      * @param initialState The initial state
      * @param config       State machine configuration
      */
-    public StateMachine(final S initialState, final StateMachineConfig<S, T> config, final StateMachineContext<S, T> context) {
+    public StateMachine(final S initialState, final StateMachineConfig<S, T> config, final StateMachineContext<S, T> context, StateMachine<S, T> parentStateMachine) {
         this.config = config;
         this.stateMachineContext = context;
+        this.parentStateMachine = parentStateMachine;
         final StateReference<S> reference = new StateReference<>();
         reference.setState(initialState);
         stateAccessor = reference::getState;
@@ -71,6 +81,10 @@ public class StateMachine<S, T> {
         }
     }
 
+    public StateMachine(final S initialState, final StateAccessor<S> stateAccessor, final StateMutator<S> stateMutator) {
+        this(initialState, stateAccessor, stateMutator, new StateMachineConfig<>());
+    }
+
     /**
      * Construct a state machine with external state storage.
      *
@@ -83,9 +97,16 @@ public class StateMachine<S, T> {
         this(initialState, stateAccessor, stateMutator, config, new DefaultStateMachineContext<>());
     }
 
-    public StateMachine(final S initialState, final StateAccessor<S> stateAccessor, final StateMutator<S> stateMutator, final StateMachineConfig<S, T> config, StateMachineContext<S, T> context) {
+    public StateMachine(final S initialState, final StateAccessor<S> stateAccessor, final StateMutator<S> stateMutator, final StateMachineConfig<S, T>
+            config, StateMachineContext<S,T> context) {
+        this(initialState, stateAccessor, stateMutator, config, context, null);
+    }
+
+    public StateMachine(final S initialState, final StateAccessor<S> stateAccessor, final StateMutator<S> stateMutator, final StateMachineConfig<S, T>
+            config, StateMachineContext<S, T> context, StateMachine<S, T> parentStateMachine) {
         this.config = config;
         this.stateMachineContext = context;
+        this.parentStateMachine = parentStateMachine;
         this.stateAccessor = stateAccessor;
         this.stateMutator = stateMutator;
         stateMutator.accept(initialState);
@@ -221,7 +242,7 @@ public class StateMachine<S, T> {
             configuration.validateParameters(args);
         }
 
-        TriggerBehaviour<S, T> triggerBehaviour = getCurrentRepresentation().tryFindHandler(trigger);
+        TriggerBehaviour<S, T> triggerBehaviour = getCurrentRepresentation().tryFindHandler(stateMachineContext, trigger, args);
         if (triggerBehaviour != null) {
             handled = true;
             S source = getState();
@@ -260,7 +281,8 @@ public class StateMachine<S, T> {
     }
 
     private StateMachine<S, T> createParallelStateMachine(ParallelStateMachineConfig<S, T> parallelStateMachineConfig, StateRepresentation<S, T> parent) {
-        StateMachine<S, T> stateMachine = new StateMachine<>(parallelStateMachineConfig.getInitialState(), parallelStateMachineConfig, getStateMachineContext());
+        StateMachine<S, T> stateMachine = new StateMachine<>(parallelStateMachineConfig.getInitialState(), parallelStateMachineConfig, getStateMachineContext
+                (),this);
         stateMachine.getTopLevelStates().forEach(s -> s.setSuperstate(parent));
         return stateMachine;
     }
@@ -331,5 +353,9 @@ public class StateMachine<S, T> {
             return parallelStateMachines.get(state);
         }
         throw new IllegalArgumentException("State " + state + " is not a parallel state.");
+    }
+
+    public StateMachine<S, T> getParentStateMachine() {
+        return parentStateMachine;
     }
 }

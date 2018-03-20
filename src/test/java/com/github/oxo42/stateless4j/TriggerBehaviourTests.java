@@ -1,11 +1,11 @@
 package com.github.oxo42.stateless4j;
 
-import org.junit.Test;
-
-import com.github.oxo42.stateless4j.transitions.TransitioningTriggerBehaviour;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+import com.github.oxo42.stateless4j.transitions.TransitioningTriggerBehaviour;
 
 public class TriggerBehaviourTests {
 
@@ -22,7 +22,7 @@ public class TriggerBehaviourTests {
         TransitioningTriggerBehaviour<State, Trigger> transtioning = new TransitioningTriggerBehaviour<>(
                 Trigger.X, State.C, IgnoredTriggerBehaviourTests.returnFalse, IgnoredTriggerBehaviourTests.nopAction);
 
-        assertFalse(transtioning.isGuardConditionMet());
+        assertFalse(transtioning.isGuardConditionMet(null, null));
     }
 
     @Test
@@ -30,6 +30,6 @@ public class TriggerBehaviourTests {
         TransitioningTriggerBehaviour<State, Trigger> transtioning = new TransitioningTriggerBehaviour<>(
                 Trigger.X, State.C, IgnoredTriggerBehaviourTests.returnTrue, IgnoredTriggerBehaviourTests.nopAction);
 
-        assertTrue(transtioning.isGuardConditionMet());
+        assertTrue(transtioning.isGuardConditionMet(null, null));
     }
 }
