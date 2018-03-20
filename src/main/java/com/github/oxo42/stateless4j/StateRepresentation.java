@@ -28,6 +28,13 @@ public class StateRepresentation<S, T> {
         this.state = state;
     }
 
+    public boolean removeTriggerBehaviour(T trigger, TriggerBehaviour<S, T> triggerBehaviour) {
+        if (triggerBehaviours.containsKey(trigger)) {
+            return triggerBehaviours.get(trigger).remove(triggerBehaviour);
+        }
+        return false;
+    }
+
     protected Map<T, List<TriggerBehaviour<S, T>>> getTriggerBehaviours() {
         return triggerBehaviours;
     }
@@ -188,12 +195,12 @@ public class StateRepresentation<S, T> {
     }
 
     @SuppressWarnings("unchecked")
-    public List<T> getPermittedTriggers() {
+    public List<T> getPermittedTriggers(StateMachineContext<S, T> context, Object ... args) {
         Set<T> result = new HashSet<>();
 
         for (T t : triggerBehaviours.keySet()) {
             for (TriggerBehaviour<S, T> v : triggerBehaviours.get(t)) {
-                if (v.isGuardConditionMet(null, null)) {
+                if (v.isGuardConditionMet(context, args)) {
                     result.add(t);
                     break;
                 }
@@ -201,7 +208,7 @@ public class StateRepresentation<S, T> {
         }
 
         if (getSuperstate() != null) {
-            result.addAll(getSuperstate().getPermittedTriggers());
+            result.addAll(getSuperstate().getPermittedTriggers(context, args));
         }
 
         return new ArrayList<>(result);
@@ -239,5 +246,9 @@ public class StateRepresentation<S, T> {
         }
 
         return result;
+    }
+
+    public S getState() {
+        return state;
     }
 }

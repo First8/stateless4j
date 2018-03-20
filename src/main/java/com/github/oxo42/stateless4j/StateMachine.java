@@ -201,8 +201,8 @@ public class StateMachine<S, T> {
      *
      * @return The currently-permissible trigger values
      */
-    public List<T> getPermittedTriggers() {
-        return getCurrentRepresentation().getPermittedTriggers();
+    public List<T> getPermittedTriggers(Object ... args) {
+        return getCurrentRepresentation().getPermittedTriggers(stateMachineContext, args);
     }
 
     StateRepresentation<S, T> getCurrentRepresentation() {
@@ -301,34 +301,6 @@ public class StateMachine<S, T> {
             throw new IllegalStateException("unhandledTriggerAction");
         }
         this.unhandledTriggerAction = unhandledTriggerAction;
-    }
-
-    /**
-     * A human-readable representation of the state machine
-     *
-     * @return A description of the current state and permitted triggers
-     */
-    @Override
-    public String toString() {
-        List<T> permittedTriggers = getPermittedTriggers();
-        List<String> parameters = new ArrayList<>();
-
-        for (T tTrigger : permittedTriggers) {
-            parameters.add(tTrigger.toString());
-        }
-
-        StringBuilder params = new StringBuilder();
-        String delim = "";
-        for (String param : parameters) {
-            params.append(delim);
-            params.append(param);
-            delim = ", ";
-        }
-
-        return String.format(
-                "StateMachine {{ State = %s, PermittedTriggers = {{ %s }}}}",
-                getState(),
-                params.toString());
     }
 
     public List<StateMachine<S, T>> getStateMachinesContainingState(S state) {
