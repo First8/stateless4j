@@ -1,21 +1,22 @@
 package com.github.oxo42.stateless4j.triggers;
 
 import com.github.oxo42.stateless4j.OutVar;
-import com.github.oxo42.stateless4j.delegates.FuncBoolean;
+import com.github.oxo42.stateless4j.StateMachineContext;
+import com.github.oxo42.stateless4j.delegates.Func;
 
-public class IgnoredTriggerBehaviour<TState, TTrigger> extends TriggerBehaviour<TState, TTrigger> {
+public class IgnoredTriggerBehaviour<S, T> extends TriggerBehaviour<S, T> {
 
-    public IgnoredTriggerBehaviour(TTrigger trigger, FuncBoolean guard) {
+    public IgnoredTriggerBehaviour(T trigger, Func<Boolean, S, T> guard) {
         super(trigger, guard);
     }
     
     @Override
-    public void performAction(Object[] args) {
+    public void performAction(StateMachineContext<S, T> context, Object[] args) {
         // no need to do anything. This is never called (no transition => no action)
     }
 
     @Override
-    public boolean resultsInTransitionFrom(TState source, Object[] args, OutVar<TState> dest) {
+    public boolean resultsInTransitionFrom(StateMachineContext<S,T> context, S source, Object[] args, OutVar<S> dest) {
         return false;
     }
 }

@@ -1,23 +1,16 @@
 package com.github.oxo42.stateless4j;
 
-import static java.util.Objects.requireNonNull;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import com.github.oxo42.stateless4j.delegates.Action1;
-import com.github.oxo42.stateless4j.delegates.Action2;
-import com.github.oxo42.stateless4j.delegates.Func;
+import com.github.oxo42.stateless4j.delegates.Action;
+import com.github.oxo42.stateless4j.delegates.StateAccessor;
+import com.github.oxo42.stateless4j.delegates.StateMutator;
 import com.github.oxo42.stateless4j.transitions.Transition;
 import com.github.oxo42.stateless4j.triggers.TriggerBehaviour;
-import com.github.oxo42.stateless4j.triggers.TriggerWithParameters;
-import com.github.oxo42.stateless4j.triggers.TriggerWithParameters1;
-import com.github.oxo42.stateless4j.triggers.TriggerWithParameters2;
-import com.github.oxo42.stateless4j.triggers.TriggerWithParameters3;
+import com.github.oxo42.stateless4j.triggers.ParameterizedTrigger;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Models behaviour as transitions between a finite set of states
@@ -28,13 +21,13 @@ import com.github.oxo42.stateless4j.triggers.TriggerWithParameters3;
 public class StateMachine<S, T> {
 
     protected final StateMachineConfig<S, T> config;
-    protected final Func<S> stateAccessor;
-    protected final Action1<StateMachineContext, S> stateMutator;
-    protected Action2<StateMachineContext, S, T> unhandledTriggerAction = (stateMachineContext, state, trigger) -> {
+    protected final StateAccessor<S> stateAccessor;
+    protected final StateMutator<S> stateMutator;
+    protected Action<S, T> unhandledTriggerAction = (stateMachineContext, transition, args) -> {
         throw new IllegalStateException(
                 String.format(
                         "No valid leaving transitions are permitted from state '%s' for trigger '%s'. Consider ignoring the trigger.",
-                        state, trigger)
+                        transition.getSource(), transition.getTrigger())
         );
     };
 
@@ -63,7 +56,7 @@ public class StateMachine<S, T> {
     public StateMachine(final S initialState, final StateMachineConfig<S, T> config, final StateMachineContext<S, T> context) {
         this.config = config;
         this.stateMachineContext = context;
-        final StateReference<S, T> reference = new StateReference<>();
+        final StateReference<S> reference = new StateReference<>();
         reference.setState(initialState);
         stateAccessor = reference::getState;
         stateMutator = reference::setState;
@@ -86,16 +79,16 @@ public class StateMachine<S, T> {
      * @param stateMutator  State mutator
      * @param config        State machine configuration
      */
-    public StateMachine(final S initialState, final Func<S> stateAccessor, final Action1<S> stateMutator, final StateMachineConfig<S, T> config) {
+    public StateMachine(final S initialState, final StateAccessor<S> stateAccessor, final StateMutator<S> stateMutator, final StateMachineConfig<S, T> config) {
         this(initialState, stateAccessor, stateMutator, config, new DefaultStateMachineContext<>());
     }
 
-    public StateMachine(final S initialState, final Func<S> stateAccessor, final Action1<S> stateMutator, final StateMachineConfig<S, T> config, StateMachineContext<S, T> context) {
+    public StateMachine(final S initialState, final StateAccessor<S> stateAccessor, final StateMutator<S> stateMutator, final StateMachineConfig<S, T> config, StateMachineContext<S, T> context) {
         this.config = config;
         this.stateMachineContext = context;
         this.stateAccessor = stateAccessor;
         this.stateMutator = stateMutator;
-        stateMutator.doIt(context, initialState);
+        stateMutator.accept(initialState);
         if (context.getTopLevelStateMachine() == null) {
             context.setStateMachine(this);
         }
@@ -134,7 +127,7 @@ public class StateMachine<S, T> {
     }
 
     private void setState(S value) {
-        stateMutator.doIt(stateMachineContext, value);
+        stateMutator.accept(value);
     }
 
     /**
@@ -200,94 +193,22 @@ public class StateMachine<S, T> {
      * Transition from the current state via the specified trigger.
      * The target state is determined by the configuration of the current state.
      * Actions associated with leaving the current state and entering the new one
-     * will be invoked
-     *
-     * @param trigger The trigger to fire
-     */
-    public void fire(T trigger) {
-        publicFire(trigger);
-    }
-
-    /**
-     * Transition from the current state via the specified trigger.
-     * The target state is determined by the configuration of the current state.
-     * Actions associated with leaving the current state and entering the new one
      * will be invoked.
      *
      * @param trigger The trigger to fire
-     * @param arg0    The first argument
-     * @param <TArg0> Type of the first trigger argument
+     * @param args the arguments
      */
-    public <TArg0> void fire(
+    public void fire(
             final T trigger,
-            final TArg0 arg0) {
+            final Object ... args) {
         requireNonNull(trigger, "trigger is null");
-        publicFire(trigger, arg0);
+        publicFire(trigger, args);
     }
 
-    /**
-     * Transition from the current state via the specified trigger.
-     * The target state is determined by the configuration of the current state.
-     * Actions associated with leaving the current state and entering the new one
-     * will be invoked.
-     *
-     * @param trigger The trigger to fire
-     * @param arg0    The first argument
-     * @param <TArg0> Type of the first trigger argument
-     */
-    public <TArg0> void fire(
-            final TriggerWithParameters1<TArg0, S, T> trigger,
-            final TArg0 arg0) {
-        requireNonNull(trigger, "trigger is null");
-        publicFire(trigger.getTrigger(), arg0);
-    }
-
-    /**
-     * Transition from the current state via the specified trigger.
-     * The target state is determined by the configuration of the current state.
-     * Actions associated with leaving the current state and entering the new one
-     * will be invoked.
-     *
-     * @param trigger The trigger to fire
-     * @param arg0    The first argument
-     * @param arg1    The second argument
-     * @param <TArg0> Type of the first trigger argument
-     * @param <TArg1> Type of the second trigger argument
-     */
-    public <TArg0, TArg1> void fire(
-            final TriggerWithParameters2<TArg0, TArg1, S, T> trigger,
-            final TArg0 arg0,
-            final TArg1 arg1) {
-        requireNonNull(trigger, "trigger is null");
-        publicFire(trigger.getTrigger(), arg0, arg1);
-    }
-
-    /**
-     * Transition from the current state via the specified trigger.
-     * The target state is determined by the configuration of the current state.
-     * Actions associated with leaving the current state and entering the new one
-     * will be invoked.
-     *
-     * @param trigger The trigger to fire
-     * @param arg0    The first argument
-     * @param arg1    The second argument
-     * @param arg2    The third argument
-     * @param <TArg0> Type of the first trigger argument
-     * @param <TArg1> Type of the second trigger argument
-     * @param <TArg2> Type of the third trigger argument
-     */
-    public <TArg0, TArg1, TArg2> void fire(
-            final TriggerWithParameters3<TArg0, TArg1, TArg2, S, T> trigger,
-            final TArg0 arg0,
-            final TArg1 arg1,
-            final TArg2 arg2) {
-        requireNonNull(trigger, "trigger is null");
-        publicFire(trigger.getTrigger(), arg0, arg1, arg2);
-    }
 
     protected void publicFire(final T trigger, final Object... args) {
         if (!privateFire(trigger, args)) {
-            unhandledTriggerAction.doIt(stateMachineContext, getCurrentRepresentation().getUnderlyingState(), trigger);
+            unhandledTriggerAction.doIt(stateMachineContext, new Transition<>(getCurrentRepresentation().getUnderlyingState(),null, trigger));
         }
     }
 
@@ -295,7 +216,7 @@ public class StateMachine<S, T> {
         boolean handled = false;
 
         // check if the trigger is handled by the current state.
-        TriggerWithParameters<S, T> configuration = config.getTriggerConfiguration(trigger);
+        ParameterizedTrigger<S, T> configuration = config.getTriggerConfiguration(trigger);
         if (configuration != null) {
             configuration.validateParameters(args);
         }
@@ -305,14 +226,14 @@ public class StateMachine<S, T> {
             handled = true;
             S source = getState();
             OutVar<S> destination = new OutVar<>();
-            if (triggerBehaviour.resultsInTransitionFrom(source, args, destination)) {
+            if (triggerBehaviour.resultsInTransitionFrom(stateMachineContext,source, args, destination)) {
                 Transition<S, T> transition = new Transition<>(source, destination.get(), trigger);
 
-                getCurrentRepresentation().exit(transition, args);
-                triggerBehaviour.performAction(args);
+                getCurrentRepresentation().exit(stateMachineContext, transition, args);
+                triggerBehaviour.performAction(stateMachineContext,args);
                 setState(destination.get());
                 initializeParallelStateMachines();
-                getCurrentRepresentation().enter(transition, args);
+                getCurrentRepresentation().enter(stateMachineContext, transition, args);
             }
         }
 
@@ -353,7 +274,7 @@ public class StateMachine<S, T> {
      *
      * @param unhandledTriggerAction An action to call when an unhandled trigger is fired
      */
-    public void onUnhandledTrigger(final Action2<StateMachineContext, S, T> unhandledTriggerAction) {
+    public void onUnhandledTrigger(final Action<S, T> unhandledTriggerAction) {
         if (unhandledTriggerAction == null) {
             throw new IllegalStateException("unhandledTriggerAction");
         }

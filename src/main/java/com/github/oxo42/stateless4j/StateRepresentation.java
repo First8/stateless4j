@@ -1,24 +1,20 @@
 package com.github.oxo42.stateless4j;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import com.github.oxo42.stateless4j.delegates.Action2;
+import com.github.oxo42.stateless4j.delegates.Action;
 import com.github.oxo42.stateless4j.transitions.Transition;
 import com.github.oxo42.stateless4j.transitions.TransitioningTriggerBehaviour;
+import com.github.oxo42.stateless4j.triggers.ParameterizedTrigger;
 import com.github.oxo42.stateless4j.triggers.TriggerBehaviour;
+
+import java.util.*;
 
 public class StateRepresentation<S, T> {
 
     private final S state;
 
     private final Map<T, List<TriggerBehaviour<S, T>>> triggerBehaviours = new HashMap<>();
-    private final List<Action2<StateMachineContext<S, T>, Transition<S, T>, Object[]>> entryActions = new ArrayList<>();
-    private final List<Action2<StateMachineContext<S, T>, Transition<S, T>, Object[]>> exitActions = new ArrayList<>();
+    private final List<Action<S, T>> entryActions = new ArrayList<>();
+    private final List<Action<S, T>> exitActions = new ArrayList<>();
     private final List<StateRepresentation<S, T>> substates = new ArrayList<>();
     private StateRepresentation<S, T> superstate; // null
     private List<ParallelStateMachineConfig<S, T>> parallelStates = new ArrayList<>();
@@ -64,31 +60,31 @@ public class StateRepresentation<S, T> {
         return actual.isEmpty() ? null : actual.get(0);
     }
 
-    public void addEntryAction(final T trigger, final Action2<StateMachineContext<S, T>, Transition<S, T>, Object[]> action) {
+    public void addEntryAction(final Action<S, T> action) {
+        addEntryAction(action,null);
+    }
+
+    public void addEntryAction(final Action<S, T> action, final ParameterizedTrigger<S,T> trigger) {
         assert action != null : "action is null";
 
-        entryActions.add(new Action2<StateMachineContext<S, T>, Transition<S, T>, Object[]>() {
-            @Override
-            public void doIt(StateMachineContext<S, T> context, Transition<S, T> t, Object[] args) {
+        entryActions.add((context, t, args) -> {
+			if( trigger != null ) {
                 T trans_trigger = t.getTrigger();
-                if (trans_trigger != null && trans_trigger.equals(trigger)) {
+                if (trans_trigger != null && trans_trigger.equals(trigger.getTrigger())) {
                     action.doIt(context, t, args);
                 }
+            } else {
+                action.doIt(context, t, args);
             }
-        });
+		});
     }
 
-    public void addEntryAction(Action2<StateMachineContext<S, T>, Transition<S, T>, Object[]> action) {
-        assert action != null : "action is null";
-        entryActions.add(action);
-    }
-
-    public void insertEntryAction(Action2<StateMachineContext<S, T>, Transition<S, T>, Object[]> action) {
+    public void insertEntryAction(Action<S, T> action) {
         assert action != null : "action is null";
         entryActions.add(0, action);
     }
 
-    public void addExitAction(Action2<StateMachineContext<S, T>, Transition<S, T>, Object[]> action) {
+    public void addExitAction(Action<S, T> action) {
         assert action != null : "action is null";
         exitActions.add(action);
     }
@@ -133,7 +129,7 @@ public class StateRepresentation<S, T> {
     void executeEntryActions(StateMachineContext<S, T> context, Transition<S, T> transition, Object[] entryArgs) {
         assert transition != null : "transition is null";
         assert entryArgs != null : "entryArgs is null";
-        for (Action2<StateMachineContext<S, T>, Transition<S, T>, Object[]> action : entryActions) {
+        for (Action<S, T> action : entryActions) {
             action.doIt(context, transition, entryArgs);
         }
     }
@@ -141,7 +137,7 @@ public class StateRepresentation<S, T> {
     void executeExitActions(StateMachineContext<S, T> context, Transition<S, T> transition, Object[] exitArgs) {
         assert transition != null : "transition is null";
         assert exitArgs != null : "entryArgs is null";
-        for (Action2<StateMachineContext<S, T>, Transition<S, T>, Object[]> action : exitActions) {
+        for (Action<S, T> action : exitActions) {
             action.doIt(context, transition, exitArgs);
         }
     }
