@@ -102,4 +102,26 @@ public class ContextStateMachineTests {
 
         Assert.assertNotNull(state);
     }
+
+    @Test
+    public void TransitionOutOfParallelStates() {
+        StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
+        config.configure(State.A).permit(Trigger.X, State.B);
+        config.enableEntryActionOfInitialState();
+
+        ParallelStateMachineConfig<State, Trigger> parallelConfig = new ParallelStateMachineConfig<>(State.C, config);
+        parallelConfig.configure(State.C).substateOf(State.A)
+                .permit(Trigger.X, State.B);
+        parallelConfig.enableEntryActionOfInitialState();
+
+        config.configure(State.A).parallel(parallelConfig);
+
+        StateMachine<State, Trigger> machine = new StateMachine<>(State.A, config);
+
+        machine.fire(Trigger.X, machine.getStateMachineContext());
+
+        StateMachineState<State> state = machine.getStateMachineState();
+
+        Assert.assertFalse(state.isInState(State.A));
+    }
 }
