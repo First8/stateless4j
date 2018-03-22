@@ -89,4 +89,20 @@ public class ContextStateMachineTests {
 
         Assert.assertFalse(state.isInState(State.A));
     }
+
+    @Test
+    public void TransitionOnEntry() {
+        StateMachineConfig<State, Trigger> config = new StateMachineConfig<>();
+        config.enableEntryActionOfInitialState();
+
+        config.configure(State.A).permit(Trigger.X, State.B);
+        config.configure(State.B).permit(Trigger.Y, State.C);
+
+        config.configure(State.B).onEntry((c, t, o) -> c.getTopLevelStateMachine().fire(Trigger.Y));
+
+        StateMachine<State, Trigger> machine = new StateMachine<>(State.A, config);
+        machine.fire(Trigger.X);
+
+        Assert.assertTrue(machine.getStateMachineState().isInState(State.C));
+    }
 }
