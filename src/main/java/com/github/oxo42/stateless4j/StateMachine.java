@@ -138,11 +138,6 @@ public class StateMachine<S, T> {
         return stateMachineContext;
     }
 
-    /**
-     * The current state
-     *
-     * @return The current state
-     */
     private S getState() {
         return stateAccessor.call();
     }
@@ -217,7 +212,7 @@ public class StateMachine<S, T> {
      * will be invoked.
      *
      * @param trigger The trigger to fire
-     * @param args the arguments
+     * @param args the arguments that will be passed to entry and exit actions
      */
     public void fire(
             final T trigger,
@@ -226,8 +221,7 @@ public class StateMachine<S, T> {
         publicFire(trigger, args);
     }
 
-
-    protected void publicFire(final T trigger, final Object... args) {
+    private void publicFire(final T trigger, final Object... args) {
         if (!privateFire(trigger, args)) {
             unhandledTriggerAction.doIt(stateMachineContext, new Transition<>(getCurrentRepresentation().getUnderlyingState(),null, trigger));
         }
@@ -325,9 +319,5 @@ public class StateMachine<S, T> {
             return parallelStateMachines.get(state);
         }
         throw new IllegalArgumentException("State " + state + " is not a parallel state.");
-    }
-
-    public StateMachine<S, T> getParentStateMachine() {
-        return parentStateMachine;
     }
 }

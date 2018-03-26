@@ -1,5 +1,8 @@
 package com.github.oxo42.stateless4j;
 
+/**
+ * Can be used to configure parallel state machines.
+ */
 public class ParallelStateMachineConfig<TState,TTrigger> extends StateMachineConfig<TState,TTrigger> {
 
 	private TState initialState;

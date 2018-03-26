@@ -28,6 +28,13 @@ public class StateRepresentation<S, T> {
         this.state = state;
     }
 
+    /**
+     * Remove a {@link TriggerBehaviour} from this state representation.
+     *
+     * @param trigger The trigger this trigger behaviour belongs to
+     * @param triggerBehaviour The trigger behaviour to remove
+     * @return
+     */
     public boolean removeTriggerBehaviour(T trigger, TriggerBehaviour<S, T> triggerBehaviour) {
         if (triggerBehaviours.containsKey(trigger)) {
             return triggerBehaviours.get(trigger).remove(triggerBehaviour);
@@ -194,7 +201,6 @@ public class StateRepresentation<S, T> {
         return this.state.equals(stateToCheck) || (superstate != null && superstate.isIncludedIn(stateToCheck));
     }
 
-    @SuppressWarnings("unchecked")
     public List<T> getPermittedTriggers(StateMachineContext<S, T> context, Object ... args) {
         Set<T> result = new HashSet<>();
 

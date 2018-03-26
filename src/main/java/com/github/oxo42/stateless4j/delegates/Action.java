@@ -4,7 +4,7 @@ import com.github.oxo42.stateless4j.StateMachineContext;
 import com.github.oxo42.stateless4j.transitions.Transition;
 
 /**
- * Represents an operation that accepts no input arguments and returns no result.
+ * Represents an operation that returns no result.
  */
 public interface Action<S,T> {
 

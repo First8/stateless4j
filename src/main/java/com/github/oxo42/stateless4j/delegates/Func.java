@@ -3,7 +3,7 @@ package com.github.oxo42.stateless4j.delegates;
 import com.github.oxo42.stateless4j.StateMachineContext;
 
 /**
- * Represents a function that accepts no input and produces a result
+ * Represents a function that produces a result.
  *
  * @param <R> Result type
  */

@@ -3,16 +3,21 @@ package com.github.oxo42.stateless4j;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents the current state of a {@link StateMachine}, including all (parallel) substates.
+ *
+ * @param <S> Type of state.
+ */
 public class StateMachineState<S> {
 
 	private S state;
 	private List<StateMachineState<S>> subStates;
 
-	public StateMachineState(S state) {
+	StateMachineState(S state) {
 		this(state,new ArrayList<>());
 	}
 
-	public StateMachineState(S state, List<StateMachineState<S>> subStates) {
+	private StateMachineState(S state, List<StateMachineState<S>> subStates) {
 		this.state = state;
 		this.subStates = subStates;
 	}
